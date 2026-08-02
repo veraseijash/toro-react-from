@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import toroLogo from '../assets/images/toro.svg';
+import useAuth from '../context/useAuth';
 
 const menuItems = [
   { to: '/', label: 'Inicio', icon: 'ico-home6', end: true },
@@ -11,14 +12,27 @@ const menuItems = [
     icon: 'ico-user4',
     children: [
       { to: '/login', label: 'Iniciar sesión' },
-      { to: '/perfil', label: 'Mi perfil' },
+      { to: '/content', label: 'Mi contenido' },
     ],
   },
 ];
 
 function Sidebar() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { session, closeSession } = useAuth();
   const [openGroups, setOpenGroups] = useState({});
+  const [photoError, setPhotoError] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const photoUrl = session?.user?.url_photo
+    ? `http://localhost:3000/images/${session.user.url_photo.replace(/^\/+/, '')}`
+    : null;
+  const userInitials = session?.user?.name
+    ?.trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((text) => text.charAt(0).toUpperCase())
+    .join(' ') || 'U';
 
   const closeSidebar = () => {
     const sidebarToggle = document.getElementById('sidebar-toggle');
@@ -27,6 +41,12 @@ function Sidebar() {
 
   const toggleGroup = (groupId, isOpen) => {
     setOpenGroups((groups) => ({ ...groups, [groupId]: !isOpen }));
+  };
+
+  const handleLogout = () => {
+    setIsProfileMenuOpen(false);
+    closeSession();
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -48,7 +68,7 @@ function Sidebar() {
           </div>
           <div>
             <strong>TORO</strong>
-            <span>Panel de control</span>
+            <span>Laboratorio clínico</span>
           </div>
         </div>
 
@@ -107,12 +127,55 @@ function Sidebar() {
         </nav>
 
         <div className="sidebar-profile">
-          <div className="sidebar-avatar">VS</div>
+          {photoUrl && !photoError ? (
+            <img
+              className="sidebar-avatar"
+              src={photoUrl}
+              alt="Foto de perfil"
+              onError={() => setPhotoError(true)}
+            />
+          ) : (
+            <div className="sidebar-avatar" aria-label="Iniciales del usuario">
+              {userInitials}
+            </div>
+          )}
           <div className="sidebar-profile-text">
-            <strong>Usuario Toro</strong>
-            <span>Administrador</span>
+            <strong>{session?.user?.name || 'Usuario Toro'}</strong>
+            <span>{session?.user?.position || 'Sin cargo'}</span>
           </div>
-          <span className="sidebar-more" aria-hidden="true">•••</span>
+          <div className="dropdown dropup sidebar-profile-dropdown">
+            <button
+              type="button"
+              className="sidebar-more"
+              onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
+              aria-expanded={isProfileMenuOpen}
+              aria-haspopup="menu"
+              aria-label="Abrir menú de usuario"
+            >
+              •••
+            </button>
+            <ul
+              className={`dropdown-menu dropdown-menu-end sidebar-profile-menu${isProfileMenuOpen ? ' show' : ''}`}
+              role="menu"
+            >
+              <li>
+                <button className="dropdown-item" type="button">
+                  Mi perfil
+                </button>
+              </li>
+              <li>
+                <button className="dropdown-item" type="button">
+                  Conversación
+                </button>
+              </li>
+              <li><hr className="dropdown-divider" /></li>
+              <li>
+                <button className="dropdown-item" type="button" onClick={handleLogout}>
+                  Cerrar sesión
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </aside>
     </>

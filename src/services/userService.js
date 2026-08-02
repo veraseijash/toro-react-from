@@ -5,7 +5,7 @@ export const getUsers = async () => {
   return response.data;
 };
 
-export const loginUser = async (credentials) => {
-  const response = await api.post('/users/login', credentials);
+export const getUserSession = async (credentials) => {
+  const response = await api.post('/users/session', credentials);
   return response.data;
 };

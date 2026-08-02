@@ -7,12 +7,15 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 import './styles/index.css';
 import "./assets/fonts/icomoon/style.css";
+import AuthProvider from './context/AuthContext.jsx';
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 );
