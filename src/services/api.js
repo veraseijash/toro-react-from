@@ -30,6 +30,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.response?.status === 401) {
+      window.dispatchEvent(new Event('auth:unauthorized'));
+    }
+
     console.error(
       'Error de API:',
       error.response?.data || error.message,

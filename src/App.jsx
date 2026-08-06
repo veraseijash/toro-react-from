@@ -5,6 +5,7 @@ import MainLayout from './layouts/MainLayout';
 import Home from './pages/Home';
 import Content from './pages/Content';
 import About from './pages/About';
+import History from './pages/History';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -24,6 +25,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/content" element={<Content />} />
             <Route path="/nosotros" element={<About />} />
+            <Route path="/historia" element={<History />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

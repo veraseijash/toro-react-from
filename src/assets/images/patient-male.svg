@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="title">
+  <title id="title">Avatar de paciente hombre</title>
+  <circle cx="60" cy="60" r="58" fill="#d8e6ee"/>
+  <path d="M29 109c4-22 15-34 31-34s27 12 31 34" fill="#345f7d"/>
+  <ellipse cx="60" cy="50" rx="19" ry="24" fill="#c98f69"/>
+  <path d="M40 46c0-22 9-32 22-32 12 0 20 8 20 25-9-7-20-10-34-7-1 7-4 11-8 14z" fill="#332823"/>
+  <path d="M47 60c4 12 22 12 26 0-2 15-8 19-13 19s-11-4-13-19z" fill="#4a342b" opacity=".9"/>
+  <circle cx="53" cy="50" r="1.5" fill="#28201d"/>
+  <circle cx="67" cy="50" r="1.5" fill="#28201d"/>
+  <path d="M52 75l8 8 8-8" fill="#f6f8fa"/>
+</svg>

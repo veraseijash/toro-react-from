@@ -1,9 +1,9 @@
 @font-face {
   font-family: 'icohv';
   src:
-    url('icohv/icohv.ttf?1bwzm') format('truetype'),
-    url('icohv/icohv.woff?1bwzm') format('woff'),
-    url('icohv/icohv.svg?1bwzm#icohv') format('svg');
+    url('icohv/icohv.ttf?5u40a9') format('truetype'),
+    url('icohv/icohv.woff?5u40a9') format('woff'),
+    url('icohv/icohv.svg?5u40a9#icohv') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -3743,6 +3743,9 @@
 }
 .ico-paperclip:before {
   content: "\e9ab";
+}
+.ico-clipboard-clock:before {
+  content: "\eced";
 }
 .ico-home:before {
   content: "\e9ac";

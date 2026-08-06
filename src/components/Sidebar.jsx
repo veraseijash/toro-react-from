@@ -5,7 +5,7 @@ import useAuth from '../context/useAuth';
 
 const menuItems = [
   { to: '/', label: 'Inicio', icon: 'ico-home6', end: true },
-  { to: '/nosotros', label: 'Nosotros', icon: 'ico-users3' },
+  { to: '/historia', label: 'Historia', icon: 'ico-clipboard-clock' },
   {
     id: 'cuenta',
     label: 'Mi cuenta',
