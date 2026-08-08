@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import useAuth from '../context/useAuth';
 import { getGroupHtListActiveWithTotals } from '../services/groupHtService';
+import { getLaboratory } from '../services/userService';
 
 function GroupCard({ group }) {
   const [photoError, setPhotoError] = useState(false);
@@ -15,13 +17,6 @@ function GroupCard({ group }) {
   const photoUrl = group.user?.url_photo
     ? `http://localhost:3000/images/${group.user.url_photo.replace(/^\/+/, '')}`
     : null;
-  const initials = group.user?.name
-    ?.trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((text) => text.charAt(0).toUpperCase())
-    .join(' ') || 'U';
-
   return (
     <article className={`card group-card${cardVariant}`}>
       <div className="card-body">
@@ -51,13 +46,11 @@ function GroupCard({ group }) {
             <img
               className="sidebar-avatar"
               src={photoUrl}
-              alt={`Foto de ${group.user?.name || 'usuario'}`}
+              alt='...'
               onError={() => setPhotoError(true)}
             />
           ) : (
-            <div className="sidebar-avatar" aria-label="Iniciales del usuario">
-              {initials}
-            </div>
+            <span className="ico ico-user4" aria-label="Usuario sin foto"></span>
           )}
           <div className="sidebar-profile-text">
             <span>Acargo:</span>
@@ -70,10 +63,39 @@ function GroupCard({ group }) {
 }
 
 function Home() {
+  const { session } = useAuth();
   const [groups, setGroups] = useState([]);
+  const [laboratoryName, setLaboratoryName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const laboratoryId = 1;
+  
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!laboratoryId) {
+      setLaboratoryName('');
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const loadLaboratory = async () => {
+      try {
+        const laboratory = await getLaboratory(laboratoryId);
+        if (isMounted) setLaboratoryName(laboratory?.name || '');
+      } catch {
+        if (isMounted) setLaboratoryName('');
+      }
+    };
+
+    loadLaboratory();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [laboratoryId]);
 
   useEffect(() => {
     let isMounted = true;
@@ -123,11 +145,14 @@ function Home() {
       {isLoading && <p className="text-light">Cargando grupos...</p>}
       {!isLoading && errorMessage && <p className="text-warning">{errorMessage}</p>}
       {!isLoading && !errorMessage && (
-        <div className="group-card-list">
-          {groups.map((group) => (
-            <GroupCard key={group.id} group={group} />
-          ))}
-        </div>
+        <>
+          {laboratoryName && <h3 className="home-laboratory-name">{laboratoryName}</h3>}
+          <div className="group-card-list">
+            {groups.map((group) => (
+              <GroupCard key={group.id} group={group} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

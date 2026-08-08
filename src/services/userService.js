@@ -9,3 +9,8 @@ export const getUserSession = async (credentials) => {
   const response = await api.post('/users/session', credentials);
   return response.data;
 };
+
+export const getLaboratory = async (id) => {
+  const response = await api.get(`/Laboratory/${id}/`);
+  return response.data;
+};

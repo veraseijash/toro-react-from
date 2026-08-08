@@ -8,13 +8,13 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './styles/index.css';
 import "./assets/fonts/icomoon/style.css";
 import AuthProvider from './context/AuthContext.jsx';
-import App from './App.jsx'
+import AuthenticatedApp from './AuthenticatedApp.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <AuthenticatedApp />
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
