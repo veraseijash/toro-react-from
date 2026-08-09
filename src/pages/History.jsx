@@ -1,6 +1,33 @@
 import { useEffect, useRef, useState } from 'react';
 import List from '../components/patients/List';
-import { getPatientsDateOrder } from '../services/patientsService';
+import { getPatient, getPatientsDateOrder } from '../services/patientsService';
+
+const formatDeliveryDate = (value) => {
+  if (!value) return '';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const hours12 = String(hours % 12 || 12).padStart(2, '0');
+
+  return `${day}-${month}-${year} ${hours12}:${minutes} ${period}`;
+};
+
+const formatAmount = (value) => {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return '';
+
+  return new Intl.NumberFormat('es-CL', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
 
 function History() {
   const now = new Date();
@@ -11,8 +38,31 @@ function History() {
   ].join('-');
   const [selectedDate, setSelectedDate] = useState(currentDate);
   const [patients, setPatients] = useState([]);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [isLoadingPatient, setIsLoadingPatient] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const requestId = useRef(0);
+  const patientRequestId = useRef(0);
+
+  const handleSelectPatient = async (id) => {
+    const currentRequestId = patientRequestId.current + 1;
+    patientRequestId.current = currentRequestId;
+    setIsLoadingPatient(true);
+
+    try {
+      const response = await getPatient(id);
+      const patient = response?.patient ?? response?.data ?? response;
+
+      if (patientRequestId.current === currentRequestId) {
+        setSelectedPatient(patient && typeof patient === 'object' ? patient : null);
+      }
+    } catch (error) {
+      console.error('No fue posible obtener el paciente:', error);
+      if (patientRequestId.current === currentRequestId) setSelectedPatient(null);
+    } finally {
+      if (patientRequestId.current === currentRequestId) setIsLoadingPatient(false);
+    }
+  };
 
   useEffect(() => {
     const currentRequestId = requestId.current + 1;
@@ -50,6 +100,12 @@ function History() {
     return undefined;
   }, [selectedDate]);
 
+  useEffect(() => {
+    patientRequestId.current += 1;
+    setSelectedPatient(null);
+    setIsLoadingPatient(false);
+  }, [selectedDate]);
+
   return (
     <div className="dashboard-content">
       <span
@@ -67,9 +123,88 @@ function History() {
       </div>
       <div className="history-columns">
         <section className="history-list-column" aria-label="Lista de pacientes">
-          {!isRefreshing && <List patients={patients} />}
+          {!isRefreshing && (
+            <List
+              patients={patients}
+              onSelectPatient={handleSelectPatient}
+              selectedPatientId={selectedPatient?.id}
+            />
+          )}
         </section>
-        <section className="history-detail-column" aria-label="Detalle del paciente" />
+        <section className="history-detail-column" aria-label="Detalle del paciente">
+          {isLoadingPatient && <p className="patient-detail-status">Cargando paciente...</p>}
+          {!isLoadingPatient && selectedPatient && (
+            <article className="card patient-summary-card">
+              <div className="card-body patient-summary-body">
+                <div className="patient-summary-column">
+                  <div className="patient-summary-name">
+                    <span className="patient-summary-id">#{selectedPatient.id}</span>{' '}
+                    {selectedPatient.name}
+                  </div>
+                  <div className="patient-summary-row">
+                    <span><strong>Edad:</strong> {selectedPatient.age} {selectedPatient.month_year}</span>
+                    <span>{Number(selectedPatient.sex) === 1 ? 'Masculino' : 'Femenino'}</span>
+                  </div>
+                  <div className="patient-summary-row">
+                    <span><strong>Teléfono:</strong> {selectedPatient.phone}</span>
+                  </div>
+                  <div className="patient-summary-row">
+                    <span>
+                      <strong>C.I.:</strong> {selectedPatient.verification_code}{' '}
+                      {selectedPatient.document_number}
+                    </span>
+                  </div>
+                  <div className="patient-summary-row">
+                    <span><strong>Email:</strong> {selectedPatient.email}</span>
+                  </div>
+                </div>
+                <div className="patient-summary-column">
+                  <div className="patient-summary-row">
+                    <span><strong>Atendido:</strong> {selectedPatient.user?.name}</span>
+                  </div>
+                  {selectedPatient.delivery_id != null && Number(selectedPatient.delivery_id) !== 0 && (
+                    <>
+                      <div className="patient-summary-row">
+                        <span>
+                          <strong>Entregado por:</strong> {selectedPatient.deliveryUser?.name}
+                        </span>
+                      </div>
+                      <div className="patient-summary-row">
+                        <span>
+                          <strong>Fecha:</strong> {formatDeliveryDate(selectedPatient.deliver_date)}
+                        </span>
+                      </div>
+                      <div className="patient-summary-row">
+                        <span><strong>Recibido:</strong> {selectedPatient.receive}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="patient-summary-column">
+                  <div className="patient-summary-row">
+                    <span>
+                      <strong>Referido:</strong>{' '}
+                      {Number(selectedPatient.client_id) === 1
+                        ? 'Ambulatorio'
+                        : selectedPatient.client?.business_name}
+                    </span>
+                  </div>
+                  <div className="patient-summary-row">
+                    <span><strong>Factura: #</strong> {selectedPatient.invoice}</span>
+                  </div>
+                  <div className="patient-summary-row">
+                    <span><strong>Total:</strong> {formatAmount(selectedPatient.total)}</span>
+                  </div>
+                  <div className="patient-summary-row">
+                    <span>
+                      <strong>Pagado:</strong> {formatAmount(selectedPatient.total_canceled)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </article>
+          )}
+        </section>
       </div>
     </div>
   );

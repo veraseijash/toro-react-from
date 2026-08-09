@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Tooltip } from 'bootstrap';
 import femaleAvatar from '../../assets/images/patient-female.svg';
 import maleAvatar from '../../assets/images/patient-male.svg';
@@ -17,8 +18,19 @@ const formatAdmissionTime = (admissionTime) => {
   return `${hours12}:${match[2]} ${period}`;
 };
 
-function List({ patients = [] }) {
+const getExamStatusClass = (exam) => {
+  if (exam.result == null) return 'patient-exam-status-pending';
+  if (Number(exam.approved_id) > 0) return 'patient-exam-status-approved';
+  if (Number(exam.processed_id) > 0 && Number(exam.approved_id) === 0) {
+    return 'patient-exam-status-processed';
+  }
+  return 'patient-exam-status-pending';
+};
+
+function List({ patients = [], onSelectPatient, selectedPatientId }) {
   const listRef = useRef(null);
+  const [openExamsId, setOpenExamsId] = useState(null);
+  const [examsMenuPosition, setExamsMenuPosition] = useState(null);
 
   useEffect(() => {
     const nameElements = listRef.current?.querySelectorAll('.patient-name') ?? [];
@@ -32,20 +44,56 @@ function List({ patients = [] }) {
     return () => tooltips.forEach((tooltip) => tooltip.dispose());
   }, [patients]);
 
+  useEffect(() => {
+    const closeExamsMenu = (event) => {
+      if (!event.target.closest('.patient-exams-dropdown, .patient-exams-menu')) {
+        setOpenExamsId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', closeExamsMenu);
+    return () => document.removeEventListener('mousedown', closeExamsMenu);
+  }, []);
+
   if (patients.length === 0) {
     return <p className="patient-list-empty">No hay pacientes para esta fecha.</p>;
   }
 
   return (
-    <div className="patient-list scrollbar-thin" ref={listRef}>
+    <div
+      className="patient-list scrollbar-thin"
+      ref={listRef}
+      onScroll={() => setOpenExamsId(null)}
+    >
       {patients.map((patient, index) => {
         const isUrgent = Number(patient.urgent) === 1;
         const avatar = Number(patient.sex) === 1 ? maleAvatar : femaleAvatar;
+        const patientId = patient.id;
+        const examsDropdownId = patientId ?? `patient-${index}`;
+        const isSelected = String(patientId) === String(selectedPatientId);
+        const isExamsOpen = openExamsId === examsDropdownId;
+
+        const selectPatient = () => {
+          if (patientId != null) onSelectPatient?.(patientId);
+        };
 
         return (
           <article
-            className="card patient-card"
+            className={`card patient-card${isSelected ? ' patient-card-selected' : ''}`}
             key={patient.id ?? patient.admission ?? `${patient.name}-${index}`}
+            role="button"
+            tabIndex={0}
+            aria-pressed={isSelected}
+            onClick={(event) => {
+              if (!event.target.closest('.patient-exams-dropdown')) selectPatient();
+            }}
+            onKeyDown={(event) => {
+              if (event.target.closest('.patient-exams-dropdown')) return;
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                selectPatient();
+              }
+            }}
           >
             <div className="card-body patient-card-body">
               <img
@@ -66,14 +114,73 @@ function List({ patients = [] }) {
                   <span className="ico ico-clock" aria-hidden="true" />
                   <span>{formatAdmissionTime(patient.admission_time)}</span>
                 </div>
-                <div className={`patient-detail ${isUrgent ? 'text-warning' : 'text-gray-500'}`}>
-                  <span
-                    className={`ico ico-alert-triangle patient-urgent-icon${isUrgent ? '' : ' not-urgent'}`}
-                    aria-hidden="true"
-                  />
-                  <span className={isUrgent ? '' : 'patient-urgent-label-not-active'}>
-                    Urgente
-                  </span>
+                <div className="patient-urgent-row">
+                  <div className={`patient-detail ${isUrgent ? 'text-warning' : 'text-gray-500'}`}>
+                    <span
+                      className={`ico ico-alert-triangle patient-urgent-icon${isUrgent ? '' : ' not-urgent'}`}
+                      aria-hidden="true"
+                    />
+                    <span className={isUrgent ? '' : 'patient-urgent-label-not-active'}>
+                      Urgente
+                    </span>
+                  </div>
+                  <div
+                    className="dropdown patient-exams-dropdown"
+                    onClick={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => event.stopPropagation()}
+                  >
+                    <button
+                      className="btn btn-sm dropdown-toggle patient-exams-button"
+                      type="button"
+                      aria-expanded={isExamsOpen}
+                      onClick={(event) => {
+                        const buttonRect = event.currentTarget.getBoundingClientRect();
+                        setExamsMenuPosition({
+                          right: window.innerWidth - buttonRect.right,
+                          bottom: window.innerHeight - buttonRect.top + 4,
+                          maxHeight: Math.max(buttonRect.top - 12, 80),
+                        });
+                        setOpenExamsId((currentId) =>
+                          currentId === examsDropdownId ? null : examsDropdownId,
+                        );
+                      }}
+                    >
+                      Exámenes
+                    </button>
+                    {isExamsOpen && examsMenuPosition && createPortal(
+                      <ul
+                        className="dropdown-menu dropdown-menu-end patient-exams-menu show"
+                        style={{
+                          position: 'fixed',
+                          inset: 'auto',
+                          right: examsMenuPosition.right,
+                          bottom: examsMenuPosition.bottom,
+                          maxHeight: examsMenuPosition.maxHeight,
+                        }}
+                      >
+                        {(patient.exams ?? []).map((exam, examIndex) => (
+                          <li
+                            className="patient-exam-item"
+                            key={exam.id ?? `${exam.description}-${examIndex}`}
+                            onClick={() => {
+                              selectPatient();
+                              setOpenExamsId(null);
+                            }}
+                          >
+                            <span className="patient-exam-description">{exam.description}</span>
+                            <span
+                              className={`patient-exam-status ${getExamStatusClass(exam)}`}
+                              aria-hidden="true"
+                            />
+                          </li>
+                        ))}
+                        {(patient.exams ?? []).length === 0 && (
+                          <li className="patient-exam-item patient-exam-item-empty">Sin exámenes</li>
+                        )}
+                      </ul>,
+                      document.body,
+                    )}
+                  </div>
                 </div>
               </div>
 

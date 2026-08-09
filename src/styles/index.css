@@ -642,7 +642,7 @@ body {
 .history-columns {
   display: grid;
   width: 100%;
-  grid-template-columns: 400px minmax(0, 1fr);
+  grid-template-columns: 350px minmax(0, 1fr);
   gap: 1.5rem;
 }
 
@@ -667,26 +667,96 @@ body {
   width: 100%;
   max-width: 100%;
   flex: 0 0 auto;
+  overflow: visible;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.patient-card:hover,
+.patient-card:focus-visible {
+  border-color: rgba(255, 255, 255, 0.52);
+  background:
+    radial-gradient(circle at 82% 5%, rgba(178, 169, 156, 0.26), transparent 35%),
+    linear-gradient(145deg, #5b5a5b 0%, #4d4d51 48%, #40444e 100%);
+}
+.patient-card-selected {
+  border-color: #456b88 !important;
+  background:
+      radial-gradient(circle at 82% 4%, rgba(143, 193, 229, 0.24), transparent 36%),
+      linear-gradient(145deg, #557b98 0%, #365b77 48%, #29465f 100%) !important;
+}
+
+.patient-card:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+}
+
+.patient-summary-card,
+.patient-detail-status {
+  width: 100%;
+  margin-top: 1.25rem;
+}
+
+.patient-summary-body {
+  display: grid;
+  min-height: 0;
+  padding: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.patient-summary-column {
+  min-width: 0;
+}
+
+.patient-summary-name {
+  margin-bottom: 0.65rem;
+  color: var(--sidebar-text);
+  font-size: 1.05rem;
+  font-weight: bolder;
+}
+
+.patient-summary-id {
+  font-size: 0.78rem;
+}
+
+.patient-summary-row {
+  display: flex;
+  margin-bottom: 0.45rem;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.3rem;
+  color: var(--sidebar-text);
+  font-size: 0.78rem;
+}
+
+.patient-detail-status {
+  color: var(--sidebar-text);
 }
 
 @media (max-width: 767.98px) {
   .history-columns {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .patient-summary-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .patient-card-body {
+  position: relative;
   display: grid;
   min-height: 118px;
   padding: 1rem;
-  grid-template-columns: 48px minmax(0, 1fr) 24px;
+  grid-template-columns: 36px minmax(0, 1fr) 24px;
   align-items: start;
   gap: 0.9rem;
 }
 
 .patient-avatar {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.72);
   border-radius: 50%;
@@ -696,6 +766,7 @@ body {
 
 .patient-card-info {
   min-width: 0;
+  padding-right: 5.25rem;
 }
 
 .patient-name {
@@ -735,6 +806,103 @@ body {
   width: 1rem;
   flex: 0 0 1rem;
   text-align: center;
+}
+
+.patient-urgent-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.patient-exams-dropdown {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+}
+
+.patient-exams-button {
+  padding: 0.15rem 0.45rem;
+  color: var(--sidebar-text);
+  border-color: rgba(255, 255, 255, 0.38);
+  font-size: 0.72rem;
+}
+
+.patient-exams-button:hover,
+.patient-exams-button:focus,
+.patient-exams-button.show {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.patient-exams-menu {
+  --bs-dropdown-color: #e7e5e2;
+  --bs-dropdown-bg: transparent;
+  --bs-dropdown-border-color: rgba(255, 255, 255, 0.34);
+  top: auto;
+  right: 0;
+  bottom: calc(100% + 0.25rem);
+  left: auto;
+  min-width: 13rem;
+  padding: 0.35rem;
+  overflow-y: auto;
+  color: #e7e5e2;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-right-color: rgba(255, 255, 255, 0.55);
+  border-radius: 13px;
+  background:
+    radial-gradient(circle at 82% 5%, rgba(148, 139, 126, 0.2), transparent 35%),
+    linear-gradient(145deg, #4b4a4b 0%, #3d3d41 48%, #30343e 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 3px 4px rgba(0, 0, 0, 0.45),
+    0 9px 16px rgba(5, 8, 14, 0.4);
+  z-index: 1080;
+}
+
+.patient-exam-item {
+  display: flex;
+  padding: 0.35rem 0.45rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #e7e5e2;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  transition: background-color 0.2s ease;
+}
+
+.patient-exam-item:not(.patient-exam-item-empty):hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.patient-exam-description {
+  font-size: 0.78rem;
+}
+
+.patient-exam-status {
+  width: 0.65rem;
+  height: 0.65rem;
+  flex: 0 0 0.65rem;
+  border: 2px solid var(--bs-gray-500);
+  border-radius: 50%;
+}
+
+.patient-exam-status-processed {
+  border-color: var(--text-warning);
+  background-color: var(--text-warning);
+}
+
+.patient-exam-status-approved {
+  border-color: var(--text-success);
+  background-color: var(--text-success);
+}
+
+.patient-exam-item-empty {
+  color: var(--bs-gray-500);
+  cursor: default;
 }
 
 .patient-urgent-icon {
