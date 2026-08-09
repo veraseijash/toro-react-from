@@ -8,6 +8,7 @@ import About from './pages/About';
 import History from './pages/History';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
+import Chats from './pages/Chats';
 import ProtectedRoute from './components/ProtectedRoute';
 import useAuth from './context/useAuth';
 
@@ -26,6 +27,7 @@ function App() {
             <Route path="/content" element={<Content />} />
             <Route path="/nosotros" element={<About />} />
             <Route path="/historia" element={<History />} />
+            <Route path="/chats" element={<Chats />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

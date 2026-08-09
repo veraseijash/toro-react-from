@@ -23,7 +23,7 @@ const menuItems = [
   },
 ];
 
-function UnreadConversation({ message }) {
+function UnreadConversation({ message, onSelect }) {
   const [photoError, setPhotoError] = useState(false);
   const sender = message.sender;
   const senderPhotoUrl = sender?.url_photo
@@ -31,7 +31,18 @@ function UnreadConversation({ message }) {
     : null;
 
   return (
-    <li className="sidebar-conversation-item">
+    <li
+      className="sidebar-conversation-item"
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(message)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onSelect(message);
+        }
+      }}
+    >
       {senderPhotoUrl && !photoError ? (
         <img
           className="sidebar-avatar"
@@ -121,9 +132,11 @@ function Sidebar() {
     };
 
     loadUnreadMessages();
+    const unreadMessagesInterval = window.setInterval(loadUnreadMessages, 60_000);
 
     return () => {
       isMounted = false;
+      window.clearInterval(unreadMessagesInterval);
     };
   }, [session?.user?.id]);
 
@@ -210,6 +223,15 @@ function Sidebar() {
     } finally {
       setIsLoadingConversations(false);
     }
+  };
+
+  const openConversation = (message) => {
+    const selectedUserId = message.sender?.id ?? message.senderUserId;
+    if (selectedUserId == null) return;
+
+    setIsConversationsOpen(false);
+    closeSidebar();
+    navigate('/chats', { state: { selectedUserId } });
   };
 
   return (
@@ -340,7 +362,7 @@ function Sidebar() {
                 </button>
               </li>
               <li>
-                <button className="dropdown-item" type="button">
+                <button className="dropdown-item" type="button" onClick={() => navigate('/chats')}>
                   Conversación
                 </button>
               </li>
@@ -367,7 +389,7 @@ function Sidebar() {
             ) : unreadConversations.length > 0 ? (
               <ul className="sidebar-conversations-list">
                 {unreadConversations.map((message) => (
-                  <UnreadConversation key={message.id} message={message} />
+                  <UnreadConversation key={message.id} message={message} onSelect={openConversation} />
                 ))}
               </ul>
             ) : (
