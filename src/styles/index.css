@@ -189,7 +189,15 @@ body {
 .app-content {
   min-height: 100vh;
   margin-left: 280px;
-  transition: margin-left 0.25s ease;
+  transition: margin-left 0.65s ease-in-out;
+}
+
+.app-shell:has(.sidebar-collapsed) .app-content {
+  margin-left: 76px;
+}
+
+.app-shell:has(.sidebar-collapsed.sidebar-hover-enabled:hover) .app-content {
+  margin-left: 280px;
 }
 
 .sidebar {
@@ -214,6 +222,32 @@ body {
   box-shadow:
     inset -1px 0 rgba(0, 0, 0, 0.28),
     12px 0 40px rgba(6, 10, 17, 0.3);
+  transition: width 0.65s ease-in-out, padding 0.65s ease-in-out;
+}
+
+.sidebar-collapse-button {
+  position: absolute;
+  top: 8px;
+  right: 0;
+  z-index: 2;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  color: var(--sidebar-text);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.sidebar-collapse-button:hover,
+.sidebar-collapse-button:focus-visible {
+  color: #e34c66;
+  outline: none;
+  transform: scale(1.08);
 }
 
 .sidebar-brand {
@@ -232,6 +266,7 @@ body {
   border-radius: 14px;
   background: linear-gradient(145deg, #d13955, #8e1831);
   box-shadow: 0 8px 22px rgba(189, 40, 69, 0.3);
+  transition: width 0.65s ease-in-out, height 0.65s ease-in-out;
 }
 
 .sidebar-logo {
@@ -239,6 +274,7 @@ body {
   height: 36px;
   object-fit: contain;
   filter: brightness(0) invert(1);
+  transition: width 0.65s ease-in-out, height 0.65s ease-in-out;
 }
 
 .sidebar-brand strong,
@@ -623,6 +659,142 @@ body {
   opacity: 0.45;
 }
 
+@media (min-width: 768px) {
+  .sidebar.sidebar-collapsed {
+    width: 76px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .sidebar.sidebar-collapsed.sidebar-hover-enabled:hover {
+    width: 280px;
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .sidebar-collapsed .sidebar-collapse-button {
+    top: 8px;
+    right: 22px;
+  }
+
+  .sidebar-collapsed .sidebar-brand {
+    justify-content: center;
+    padding: 30px 0 28px;
+  }
+
+  .sidebar-collapsed .sidebar-logo-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+  }
+
+  .sidebar-collapsed .sidebar-logo {
+    width: 24px;
+    height: 28px;
+  }
+
+  .sidebar-collapsed .sidebar-brand > div:last-child,
+  .sidebar-collapsed .sidebar-section-title,
+  .sidebar-collapsed .sidebar-link > span:not(.ico),
+  .sidebar-collapsed .sidebar-submenu,
+  .sidebar-collapsed .sidebar-profile-text,
+  .sidebar-collapsed .sidebar-profile-dropdown,
+  .sidebar-collapsed .sidebar-conversations-panel {
+    display: none;
+  }
+
+  .sidebar-collapsed .sidebar-nav {
+    align-items: center;
+  }
+
+  .sidebar-collapsed .sidebar-group {
+    width: 100%;
+  }
+
+  .sidebar-collapsed .sidebar-link {
+    width: 50px;
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+    margin-inline: auto;
+    font-size: 1.25rem;
+  }
+
+  .sidebar-collapsed .sidebar-link:hover {
+    transform: none;
+  }
+
+  .sidebar-collapsed .sidebar-link.active::before {
+    left: -13px;
+  }
+
+  .sidebar-collapsed .sidebar-profile {
+    padding: 15px 0 4px;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-collapse-button {
+    right: 0;
+  }
+
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-brand {
+    justify-content: flex-start;
+    padding: 0 8px 30px;
+  }
+
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-logo-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-logo {
+    width: 32px;
+    height: 36px;
+  }
+
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-brand > div:last-child,
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-section-title,
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-link > span:not(.ico),
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-messages-button,
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-profile-text,
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-profile-dropdown {
+    display: block;
+  }
+
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-nav {
+    align-items: stretch;
+  }
+
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-link {
+    width: 100%;
+    padding: 0 15px;
+    justify-content: flex-start;
+    gap: 14px;
+    margin-inline: 0;
+    font-size: 0.92rem;
+  }
+
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-link:hover {
+    transform: translateX(2px);
+  }
+
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-link.active::before {
+    left: -20px;
+  }
+
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-submenu {
+    display: grid;
+  }
+
+  .sidebar-collapsed.sidebar-hover-enabled:hover .sidebar-profile {
+    padding: 15px 10px 4px;
+    justify-content: flex-start;
+    gap: 11px;
+  }
+}
+
 .home-laboratory-name {
   position: fixed;
   right: 12px;
@@ -649,6 +821,10 @@ body {
 .history-list-column,
 .history-detail-column {
   min-width: 0;
+}
+
+.history-detail-column:has(.patient-observation-card) {
+  padding-bottom: 10rem;
 }
 
 .patient-list {
@@ -697,6 +873,10 @@ body {
   margin-top: 1.25rem;
 }
 
+.card.patient-summary-card {
+  overflow: visible;
+}
+
 .patient-summary-body {
   display: grid;
   min-height: 0;
@@ -732,6 +912,79 @@ body {
 
 .patient-detail-status {
   color: var(--sidebar-text);
+}
+
+.patient-observation-button {
+  display: inline-flex;
+  padding: 0;
+  align-items: center;
+  gap: 0.4rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.patient-observation-button:disabled {
+  cursor: default;
+}
+
+.patient-observation-button:focus-visible {
+  border-radius: 0.2rem;
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.patient-observation-icon {
+  position: relative;
+}
+
+.patient-observation-icon.no-observation::after {
+  position: absolute;
+  top: 50%;
+  left: -2px;
+  width: calc(100% + 4px);
+  height: 2px;
+  content: '';
+  border-radius: 2px;
+  background: currentColor;
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+.patient-observation-label-empty {
+  text-decoration: line-through;
+}
+
+.patient-observation-dropdown {
+  position: relative;
+}
+
+.patient-observation-card {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  z-index: 20;
+  width: min(350px, calc(100vw - 2rem));
+  margin: 0;
+}
+
+.patient-observation-body {
+  padding: 1rem;
+}
+
+.patient-observation-title {
+  margin: 0 0 0.65rem;
+  color: var(--sidebar-text);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.patient-observation-text {
+  margin: 0;
+  color: var(--sidebar-text);
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 @media (max-width: 767.98px) {
@@ -1045,6 +1298,10 @@ body {
     width: min(280px, 86vw);
     transform: translateX(-105%);
     transition: transform 0.25s ease;
+  }
+
+  .sidebar-collapse-button {
+    display: none;
   }
 
   .sidebar-conversations-panel {

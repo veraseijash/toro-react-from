@@ -39,15 +39,18 @@ function History() {
   const [selectedDate, setSelectedDate] = useState(currentDate);
   const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [isObservationOpen, setIsObservationOpen] = useState(false);
   const [isLoadingPatient, setIsLoadingPatient] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const requestId = useRef(0);
   const patientRequestId = useRef(0);
+  const observationDropdownRef = useRef(null);
 
   const handleSelectPatient = async (id) => {
     const currentRequestId = patientRequestId.current + 1;
     patientRequestId.current = currentRequestId;
     setIsLoadingPatient(true);
+    setIsObservationOpen(false);
 
     try {
       const response = await getPatient(id);
@@ -78,7 +81,6 @@ function History() {
 
       try {
         const patients = await getPatientsDateOrder(selectedDate);
-        console.log('Pacientes por fecha:', patients);
         const patientList = Array.isArray(patients)
           ? patients
           : patients?.patients ?? patients?.data ?? [];
@@ -103,8 +105,24 @@ function History() {
   useEffect(() => {
     patientRequestId.current += 1;
     setSelectedPatient(null);
+    setIsObservationOpen(false);
     setIsLoadingPatient(false);
   }, [selectedDate]);
+
+  useEffect(() => {
+    if (!isObservationOpen) return undefined;
+
+    const closeObservation = (event) => {
+      if (!observationDropdownRef.current?.contains(event.target)) {
+        setIsObservationOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', closeObservation);
+    return () => document.removeEventListener('mousedown', closeObservation);
+  }, [isObservationOpen]);
+
+  const hasObservation = Boolean(String(selectedPatient?.observation ?? '').trim());
 
   return (
     <div className="dashboard-content">
@@ -134,6 +152,7 @@ function History() {
         <section className="history-detail-column" aria-label="Detalle del paciente">
           {isLoadingPatient && <p className="patient-detail-status">Cargando paciente...</p>}
           {!isLoadingPatient && selectedPatient && (
+            <>
             <article className="card patient-summary-card">
               <div className="card-body patient-summary-body">
                 <div className="patient-summary-column">
@@ -160,7 +179,42 @@ function History() {
                 </div>
                 <div className="patient-summary-column">
                   <div className="patient-summary-row">
+                    <span><strong>Muestra:</strong> {selectedPatient.sample}</span>
+                  </div>
+                  <div className="patient-summary-row">
+                    <span><strong>Tipo de muestra:</strong> {selectedPatient.sample_type}</span>
+                  </div>
+                  <div className="patient-summary-row">
                     <span><strong>Atendido:</strong> {selectedPatient.user?.name}</span>
+                  </div>
+                  <div
+                    className="patient-summary-row patient-observation-dropdown"
+                    ref={observationDropdownRef}
+                  >
+                    <button
+                      type="button"
+                      className={`patient-observation-button ${hasObservation ? 'text-warning' : 'text-gray-500'}`}
+                      disabled={!hasObservation}
+                      aria-expanded={hasObservation ? isObservationOpen : false}
+                      aria-controls="patient-observation-card"
+                      onClick={() => setIsObservationOpen((isOpen) => !isOpen)}
+                    >
+                      <span
+                        className={`ico ico-commenting-o patient-observation-icon${hasObservation ? '' : ' no-observation'}`}
+                        aria-hidden="true"
+                      />
+                      <span className={hasObservation ? '' : 'patient-observation-label-empty'}>
+                        Observaciones
+                      </span>
+                    </button>
+                    {hasObservation && isObservationOpen && (
+                      <article className="card patient-observation-card" id="patient-observation-card">
+                        <div className="card-body patient-observation-body">
+                          <h2 className="patient-observation-title">Observación</h2>
+                          <p className="patient-observation-text">{selectedPatient.observation}</p>
+                        </div>
+                      </article>
+                    )}
                   </div>
                   {selectedPatient.delivery_id != null && Number(selectedPatient.delivery_id) !== 0 && (
                     <>
@@ -203,6 +257,7 @@ function History() {
                 </div>
               </div>
             </article>
+            </>
           )}
         </section>
       </div>

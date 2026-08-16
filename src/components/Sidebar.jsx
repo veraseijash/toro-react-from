@@ -11,7 +11,7 @@ import {
 
 const menuItems = [
   { to: '/', label: 'Inicio', icon: 'ico-home6', end: true },
-  { to: '/historia', label: 'Historia', icon: 'ico-clipboard-clock' },
+  { to: '/historia', label: 'Historia', icon: 'ico-clipboard-clock', collapseOnClick: true },
   {
     id: 'cuenta',
     label: 'Mi cuenta',
@@ -100,6 +100,8 @@ function Sidebar() {
   const [unreadConversations, setUnreadConversations] = useState([]);
   const [isConversationsOpen, setIsConversationsOpen] = useState(false);
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isSidebarHoverEnabled, setIsSidebarHoverEnabled] = useState(true);
   const messagesButtonRef = useRef(null);
   const conversationsPanelRef = useRef(null);
   const messagesTooltipRef = useRef(null);
@@ -246,7 +248,28 @@ function Sidebar() {
 
       <label className="sidebar-overlay" htmlFor="sidebar-toggle" aria-label="Cerrar menú" />
 
-      <aside className="sidebar">
+      <aside
+        className={`sidebar${isCollapsed ? ' sidebar-collapsed' : ''}${isSidebarHoverEnabled ? ' sidebar-hover-enabled' : ''}`}
+        onMouseLeave={() => setIsSidebarHoverEnabled(true)}
+      >
+        <button
+          type="button"
+          className="sidebar-collapse-button"
+          onClick={() => {
+            if (!isCollapsed) setIsSidebarHoverEnabled(false);
+            setIsCollapsed(!isCollapsed);
+            setIsConversationsOpen(false);
+            setIsProfileMenuOpen(false);
+          }}
+          aria-label={isCollapsed ? 'Expandir barra lateral' : 'Recoger barra lateral'}
+          aria-expanded={!isCollapsed}
+        >
+          <span
+            className={`ico ${isCollapsed ? 'ico-sidebarOut' : 'ico-sidebarIn'}`}
+            aria-hidden="true"
+          ></span>
+        </button>
+
         <div className="sidebar-brand">
           <div className="sidebar-logo-wrap">
             <img className="sidebar-logo" src={toroLogo} alt="Toro" />
@@ -267,7 +290,13 @@ function Sidebar() {
                   key={item.to}
                   to={item.to}
                   end={item.end}
-                  onClick={closeSidebar}
+                  onClick={() => {
+                    closeSidebar();
+                    if (item.collapseOnClick) {
+                      setIsSidebarHoverEnabled(false);
+                      setIsCollapsed(true);
+                    }
+                  }}
                   className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
                 >
                   <span className={`ico ${item.icon}`} aria-hidden="true" />
