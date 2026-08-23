@@ -37,6 +37,8 @@ function List({
   const listRef = useRef(null);
   const [openExamsId, setOpenExamsId] = useState(null);
   const [examsMenuPosition, setExamsMenuPosition] = useState(null);
+  const [openActionsId, setOpenActionsId] = useState(null);
+  const [actionsMenuPosition, setActionsMenuPosition] = useState(null);
 
   useEffect(() => {
     const nameElements = listRef.current?.querySelectorAll('.patient-name') ?? [];
@@ -55,6 +57,9 @@ function List({
       if (!event.target.closest('.patient-exams-dropdown, .patient-exams-menu')) {
         setOpenExamsId(null);
       }
+      if (!event.target.closest('.patient-card-actions, .patient-actions-menu')) {
+        setOpenActionsId(null);
+      }
     };
 
     document.addEventListener('mousedown', closeExamsMenu);
@@ -69,7 +74,10 @@ function List({
     <div
       className="patient-list scrollbar-thin"
       ref={listRef}
-      onScroll={() => setOpenExamsId(null)}
+      onScroll={() => {
+        setOpenExamsId(null);
+        setOpenActionsId(null);
+      }}
     >
       {patients.map((patient, index) => {
         const isUrgent = Number(patient.urgent) === 1;
@@ -78,6 +86,7 @@ function List({
         const examsDropdownId = patientId ?? `patient-${index}`;
         const isSelected = String(patientId) === String(selectedPatientId);
         const isExamsOpen = openExamsId === examsDropdownId;
+        const isActionsOpen = openActionsId === examsDropdownId;
 
         const selectPatient = () => {
           if (patientId != null) onSelectPatient?.(patientId);
@@ -91,13 +100,13 @@ function List({
             tabIndex={0}
             aria-pressed={isSelected}
             onClick={(event) => {
-              if (!event.target.closest('.patient-exams-dropdown')) {
+              if (!event.target.closest('.patient-exams-dropdown, .patient-card-actions')) {
                 if (!isSelected) onClearExam?.();
                 selectPatient();
               }
             }}
             onKeyDown={(event) => {
-              if (event.target.closest('.patient-exams-dropdown')) return;
+              if (event.target.closest('.patient-exams-dropdown, .patient-card-actions')) return;
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
                 if (!isSelected) onClearExam?.();
@@ -153,6 +162,7 @@ function List({
                         setOpenExamsId((currentId) =>
                           currentId === examsDropdownId ? null : examsDropdownId,
                         );
+                        setOpenActionsId(null);
                       }}
                     >
                       Exámenes
@@ -195,7 +205,50 @@ function List({
                 </div>
               </div>
 
-              <span className="ico ico-more-horizontal patient-card-more" aria-hidden="true" />
+              <div
+                className="patient-card-actions"
+                onClick={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  className="patient-card-more"
+                  aria-label="Opciones del paciente"
+                  aria-expanded={isActionsOpen}
+                  onClick={(event) => {
+                    const buttonRect = event.currentTarget.getBoundingClientRect();
+                    setActionsMenuPosition({
+                      right: window.innerWidth - buttonRect.right,
+                      top: buttonRect.bottom + 4,
+                    });
+                    setOpenActionsId((currentId) =>
+                      currentId === examsDropdownId ? null : examsDropdownId,
+                    );
+                    setOpenExamsId(null);
+                  }}
+                >
+                  <span className="ico ico-more-horizontal" aria-hidden="true" />
+                </button>
+                {isActionsOpen && actionsMenuPosition && createPortal(
+                  <ul
+                    className="dropdown-menu dropdown-menu-end patient-actions-menu show"
+                    style={{
+                      position: 'fixed',
+                      inset: 'auto',
+                      right: actionsMenuPosition.right,
+                      top: actionsMenuPosition.top,
+                    }}
+                  >
+                    <li><button type="button" className="dropdown-item">Imprimir resultados</button></li>
+                    <li><button type="button" className="dropdown-item">Imprimir comprobante</button></li>
+                    <li><button type="button" className="dropdown-item">Imprimir toma de muestra</button></li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li><button type="button" className="dropdown-item">Factura</button></li>
+                    <li><button type="button" className="dropdown-item">Crear PDF</button></li>
+                  </ul>,
+                  document.body,
+                )}
+              </div>
             </div>
           </article>
         );

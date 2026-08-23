@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import useAuth from '../../context/useAuth';
 import { getExam, updateExam } from '../../services/patientsService';
+import { getNumericFormatConfiguration, numericFormat } from '../../utils/numericFormat';
 
 const RESULT_INLINE_STYLES = {
-  'patient-exam-format-row': 'display:flex;width:100%;min-height:48px;align-items:center;gap:5px',
+  'patient-exam-format-row': 'display:flex;width:100%;align-items:center;gap:5px',
   'patient-exam-format-column': 'min-width:0',
   'patient-exam-format-text': 'margin:0;color:#292c33',
   'patient-exam-format-label': 'font-weight:600',
@@ -87,7 +88,163 @@ const getColumnStyle = (column) => ({
   paddingLeft: column?.style?.paddingLeft || 0,
 });
 
+const getVariableName = (control, fallbackName) => {
+  const placeholderName = [control?.value, control?.text]
+    .map((value) => String(value ?? '').match(/{{\s*([^{}]+?)\s*}}/)?.[1])
+    .find(Boolean);
+  const candidates = [
+    control?.name,
+    control?.variableName,
+    control?.variable_name,
+    typeof control?.variable === 'string' ? control.variable : null,
+    placeholderName,
+    control?.id,
+    control?.key,
+  ];
+  const name = candidates.find((candidate) => candidate != null && String(candidate).trim());
+  return String(name ?? fallbackName);
+};
+
+const parseInputNumber = (value, prefix = '', suffix = '') => {
+  const format = getNumericFormatConfiguration();
+  let normalizedValue = String(value).trim();
+
+  if (prefix && normalizedValue.startsWith(prefix)) {
+    normalizedValue = normalizedValue.slice(prefix.length);
+  }
+  if (suffix && normalizedValue.endsWith(suffix)) {
+    normalizedValue = normalizedValue.slice(0, -suffix.length);
+  }
+  if (format.useThousandsSeparator && format.thousandsSeparator) {
+    normalizedValue = normalizedValue.split(format.thousandsSeparator).join('');
+  }
+  if (format.decimalSeparator && format.decimalSeparator !== '.') {
+    normalizedValue = normalizedValue.replace(format.decimalSeparator, '.');
+  }
+
+  const numericValue = Number(normalizedValue);
+  return Number.isFinite(numericValue) ? numericValue : null;
+};
+
+const evaluateFormula = (formula, values) => {
+  const expression = formula.replace(/{{\s*([^{}]+?)\s*}}/g, (match, variableName) => (
+    `(${values.get(variableName)})`
+  )).replace(/\^/g, '**');
+
+  if (!/^[\d+\-*/%().\s*]+$/.test(expression)) return null;
+
+  try {
+    const result = Function(`"use strict"; return (${expression});`)();
+    return Number.isFinite(result) ? result : null;
+  } catch {
+    return null;
+  }
+};
+
+const updateFormulaInputs = (sourceInput) => {
+  const container = sourceInput.closest('.patient-exam-format');
+  if (!container) return;
+
+  const inputs = Array.from(container.querySelectorAll('input[name]'));
+  const formulaInputs = inputs.filter((input) => input.dataset.formula);
+
+  for (let attempt = 0; attempt < formulaInputs.length; attempt += 1) {
+    formulaInputs.forEach((formulaInput) => {
+      const variableNames = Array.from(
+        formulaInput.dataset.formula.matchAll(/{{\s*([^{}]+?)\s*}}/g),
+        (match) => match[1],
+      );
+      const values = new Map();
+
+      const hasAllValues = variableNames.every((variableName) => {
+        const dependency = inputs.find((input) => input.name === variableName);
+        if (!dependency || !dependency.value.trim()) return false;
+
+        const value = dependency.dataset.numericValue !== undefined
+          ? Number(dependency.dataset.numericValue)
+          : parseInputNumber(
+            dependency.value,
+            dependency.dataset.prefix,
+            dependency.dataset.suffix,
+          );
+        if (!Number.isFinite(value)) return false;
+        values.set(variableName, value);
+        return true;
+      });
+
+      if (!hasAllValues) {
+        formulaInput.value = '';
+        delete formulaInput.dataset.numericValue;
+        return;
+      }
+
+      const result = evaluateFormula(formulaInput.dataset.formula, values);
+      if (result == null) return;
+
+      formulaInput.dataset.numericValue = String(result);
+      formulaInput.value = numericFormat(
+        result,
+        Number(formulaInput.dataset.decimalPlaces),
+        formulaInput.dataset.prefix,
+        formulaInput.dataset.suffix,
+      );
+    });
+  }
+};
+
 function FormatControl({ control, controlId }) {
+  const formatRequestId = useRef(0);
+  const variableName = getVariableName(control, controlId);
+  const isFormula = control?.isFormula === true;
+  const decimalPlaces = control.allowDecimal
+    ? Number(control.decimalLimit)
+    : 0;
+
+  const handleNumericInput = (event) => {
+    const input = event.currentTarget;
+    const numericValue = parseInputNumber(
+      input.value,
+      control.prefix ?? '',
+      control.suffix ?? '',
+    );
+
+    if (numericValue == null) {
+      delete input.dataset.numericValue;
+    } else {
+      input.dataset.numericValue = String(numericValue);
+    }
+    updateFormulaInputs(input);
+  };
+
+  const handleNumericBlur = async (event) => {
+    const input = event.currentTarget;
+    const value = input.value;
+
+    if (!value.trim()) return;
+
+    const currentRequestId = formatRequestId.current + 1;
+    formatRequestId.current = currentRequestId;
+    const numericValue = parseInputNumber(value, control.prefix ?? '', control.suffix ?? '');
+    if (numericValue == null) return;
+    input.dataset.numericValue = String(numericValue);
+
+    try {
+      const formattedValue = await numericFormat(
+        numericValue,
+        decimalPlaces,
+        control.prefix ?? '',
+        control.suffix ?? '',
+      );
+
+      if (formatRequestId.current === currentRequestId && input.isConnected) {
+        input.value = formattedValue;
+        updateFormulaInputs(input);
+      }
+    } catch (error) {
+      console.error('No fue posible formatear el valor numerico:', error);
+    }
+  };
+
   if (control?.type !== 'variable') {
     return (
       <div
@@ -97,7 +254,7 @@ function FormatControl({ control, controlId }) {
     );
   }
 
-  if (control.autocompletion && Array.isArray(control.autocompletionList)
+  if (!isFormula && control.autocompletion && Array.isArray(control.autocompletionList)
     && control.autocompletionList.length > 0) {
     const autocompleteId = `${controlId}-options`;
 
@@ -106,9 +263,12 @@ function FormatControl({ control, controlId }) {
         <input
           className="form-control"
           id={controlId}
+          name={variableName}
           type="text"
           list={autocompleteId}
           autoComplete="off"
+          onInput={control.numeric ? handleNumericInput : undefined}
+          onBlur={control.numeric ? handleNumericBlur : undefined}
         />
         <datalist id={autocompleteId}>
           {(control.autocompletionList ?? []).map((option, index) => (
@@ -123,8 +283,16 @@ function FormatControl({ control, controlId }) {
     <input
       className="form-control"
       id={controlId}
-      type={control.numeric ? 'number' : 'text'}
-      step={control.numeric && control.allowDecimal ? 'any' : undefined}
+      name={variableName}
+      type="text"
+      inputMode={control.numeric ? (control.allowDecimal ? 'decimal' : 'numeric') : undefined}
+      readOnly={isFormula}
+      data-formula={isFormula ? control.formula : undefined}
+      data-decimal-places={decimalPlaces}
+      data-prefix={control.prefix ?? ''}
+      data-suffix={control.suffix ?? ''}
+      onInput={control.numeric && !isFormula ? handleNumericInput : undefined}
+      onBlur={control.numeric && !isFormula ? handleNumericBlur : undefined}
     />
   );
 }
@@ -175,8 +343,8 @@ const createResultHTML = (source) => {
     const span = document.createElement('span');
     span.setAttribute(
       'style',
-      'display:block;width:100%;min-height:40px;padding:.375rem .75rem;color:#212529;'
-      + 'background:#fff;border:1px solid #dee2e6;border-radius:.375rem',
+      'display:block;width:100%;color:#212529;'
+      + 'background:#fff;',
     );
     span.textContent = value;
     input.replaceWith(span);
@@ -184,6 +352,8 @@ const createResultHTML = (source) => {
 
   clone.querySelectorAll('datalist').forEach((list) => list.remove());
   clone.querySelectorAll('*').forEach((element) => {
+    appendInlineStyle(element, 'font-size:0.875rem');
+
     element.classList.forEach((className) => {
       appendInlineStyle(element, RESULT_INLINE_STYLES[className]);
     });
@@ -252,6 +422,7 @@ function Examen({ examId, processedId: selectedProcessedId, onRegistered }) {
     ? parseFormat(formatVue)
     : null;
   const result = findDeepValue(exam, 'result');
+  const hasResult = typeof result === 'string' && Boolean(result.trim());
 
   const handleRegister = async () => {
     const formatContent = formatRef.current?.querySelector('.v-card__text');
@@ -270,12 +441,36 @@ function Examen({ examId, processedId: selectedProcessedId, onRegistered }) {
     try {
       const response = await updateExam(examId, data);
       const updatedExam = normalizeExam(response);
-      setExam(updatedExam ?? { ...exam, ...data });
+      setExam({ ...(updatedExam ?? exam), ...data });
       await onRegistered?.(examId, data);
       toast.success('Examen registrado correctamente.');
     } catch (error) {
       console.error('No fue posible registrar el examen:', error);
       toast.error('No fue posible registrar el examen.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleClearResults = async () => {
+    if (isSaving) return;
+
+    const data = {
+      result: '',
+      processed_id: 0,
+      size: 0,
+    };
+
+    setIsSaving(true);
+    try {
+      const response = await updateExam(examId, data);
+      const updatedExam = normalizeExam(response);
+      setExam({ ...exam, ...(updatedExam ?? {}), ...data });
+      await onRegistered?.(examId, data);
+      toast.success('Resultados limpiados correctamente.');
+    } catch (error) {
+      console.error('No fue posible limpiar los resultados del examen:', error);
+      toast.error('No fue posible limpiar los resultados del examen.');
     } finally {
       setIsSaving(false);
     }
@@ -290,10 +485,10 @@ function Examen({ examId, processedId: selectedProcessedId, onRegistered }) {
       <div className="card-body patient-exam-card-body" ref={formatRef}>
         {isLoading && <p className="patient-exam-card-message">Cargando examen...</p>}
         {!isLoading && pendingFormat && <FormatVue format={pendingFormat} />}
-        {!isLoading && !pendingFormat && typeof result === 'string' && result.trim() && (
+        {!isLoading && !pendingFormat && hasResult && (
           <div dangerouslySetInnerHTML={{ __html: result }} />
         )}
-        {!isLoading && !pendingFormat && !(typeof result === 'string' && result.trim()) && rows.map((row) => (
+        {!isLoading && !pendingFormat && !hasResult && rows.map((row) => (
           <div className="patient-exam-card-row" key={row.id}>
             <span>{row.description}</span>
             <span>{row.reference}</span>
@@ -312,6 +507,16 @@ function Examen({ examId, processedId: selectedProcessedId, onRegistered }) {
             onClick={handleRegister}
           >
             {isSaving ? 'REGISTRANDO...' : 'REGISTRAR'}
+          </button>
+        )}
+        {!pendingFormat && hasResult && (
+          <button
+            type="button"
+            className="btn btn-warning"
+            disabled={isSaving}
+            onClick={handleClearResults}
+          >
+            {isSaving ? 'LIMPIANDO...' : 'LIMPIAR RESULTADOS'}
           </button>
         )}
       </div>

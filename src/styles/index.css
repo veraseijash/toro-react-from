@@ -872,6 +872,12 @@ body {
   width: 100%;
   margin-top: 1.25rem;
 }
+.patient-summary-card {
+  border-color: #456b88 !important;
+  background:
+      radial-gradient(circle at 82% 4%, rgba(143, 193, 229, 0.24), transparent 36%),
+      linear-gradient(145deg, #557b98 0%, #365b77 48%, #29465f 100%) !important;
+}
 
 .card.patient-summary-card {
   overflow: visible;
@@ -1024,6 +1030,7 @@ body {
   padding: 1rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem;
+
 }
 
 .patient-summary-column {
@@ -1323,10 +1330,53 @@ body {
   color: var(--bs-gray-500, #adb5bd) !important;
 }
 
-.patient-card-more {
+.patient-card-actions {
   justify-self: end;
+}
+
+.patient-card-more {
+  display: inline-flex;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
   color: var(--sidebar-text);
+  border: 0;
+  background: transparent;
   font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.patient-card-more:hover,
+.patient-card-more:focus-visible {
+  color: #fff;
+}
+
+.patient-actions-menu {
+  --bs-dropdown-color: #e7e5e2;
+  --bs-dropdown-bg: #3d3d41;
+  --bs-dropdown-border-color: rgba(255, 255, 255, 0.34);
+  min-width: 13rem;
+  padding: 0.35rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(5, 8, 14, 0.45);
+  z-index: 1080;
+}
+
+.patient-actions-menu .dropdown-item {
+  padding: 0.4rem 0.55rem;
+  color: #e7e5e2;
+  border-radius: 7px;
+  font-size: 0.78rem;
+}
+
+.patient-actions-menu .dropdown-item:hover,
+.patient-actions-menu .dropdown-item:focus {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.patient-actions-menu .dropdown-divider {
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .patient-list-empty {

@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import AuthContext from './auth-context';
+import { getLaboratory } from '../services/laboratoryService';
+import {
+  clearNumericFormatConfiguration,
+  getNumericFormatConfiguration,
+  setNumericFormatConfiguration,
+} from '../utils/numericFormat';
 
 const getTokenExpiration = (token) => {
   try {
@@ -39,21 +45,33 @@ export default function AuthProvider({ children }) {
     if (!token || !user || isTokenExpired(token)) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      clearNumericFormatConfiguration();
       return null;
     }
 
-    return { token, user };
+    return { token, user, numericFormat: getNumericFormatConfiguration() };
   });
 
-  const createSession = ({ user, token }) => {
+  const createSession = async ({ user, token }) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
-    setSession({ user, token });
+
+    let numericFormat;
+    try {
+      const laboratory = await getLaboratory();
+      numericFormat = setNumericFormatConfiguration(laboratory?.numeric_format);
+    } catch (error) {
+      console.error('No fue posible cargar el formato numerico del laboratorio:', error);
+      numericFormat = setNumericFormatConfiguration(null);
+    }
+
+    setSession({ user, token, numericFormat });
   };
 
   const closeSession = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    clearNumericFormatConfiguration();
     setSession(null);
   };
 

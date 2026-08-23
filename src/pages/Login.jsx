@@ -43,7 +43,7 @@ function Login() {
         throw new Error('La respuesta del servidor no contiene una sesión válida');
       }
 
-      createSession({ user, token });
+      await createSession({ user, token });
       navigate('/', { replace: true });
     } catch (error) {
       setErrorMessage(
