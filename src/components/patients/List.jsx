@@ -27,7 +27,13 @@ const getExamStatusClass = (exam) => {
   return 'patient-exam-status-pending';
 };
 
-function List({ patients = [], onSelectPatient, selectedPatientId }) {
+function List({
+  patients = [],
+  onSelectPatient,
+  onSelectExam,
+  onClearExam,
+  selectedPatientId,
+}) {
   const listRef = useRef(null);
   const [openExamsId, setOpenExamsId] = useState(null);
   const [examsMenuPosition, setExamsMenuPosition] = useState(null);
@@ -85,12 +91,16 @@ function List({ patients = [], onSelectPatient, selectedPatientId }) {
             tabIndex={0}
             aria-pressed={isSelected}
             onClick={(event) => {
-              if (!event.target.closest('.patient-exams-dropdown')) selectPatient();
+              if (!event.target.closest('.patient-exams-dropdown')) {
+                if (!isSelected) onClearExam?.();
+                selectPatient();
+              }
             }}
             onKeyDown={(event) => {
               if (event.target.closest('.patient-exams-dropdown')) return;
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
+                if (!isSelected) onClearExam?.();
                 selectPatient();
               }
             }}
@@ -164,6 +174,7 @@ function List({ patients = [], onSelectPatient, selectedPatientId }) {
                             key={exam.id ?? `${exam.description}-${examIndex}`}
                             onClick={() => {
                               selectPatient();
+                              if (exam.id != null) onSelectExam?.(exam.id, exam.processed_id);
                               setOpenExamsId(null);
                             }}
                           >

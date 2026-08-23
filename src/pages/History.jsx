@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import List from '../components/patients/List';
+import Examen from '../components/patients/Examen';
 import { getPatient, getPatientsDateOrder } from '../services/patientsService';
 
 const formatDeliveryDate = (value) => {
@@ -39,6 +40,7 @@ function History() {
   const [selectedDate, setSelectedDate] = useState(currentDate);
   const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [selectedExam, setSelectedExam] = useState(null);
   const [isObservationOpen, setIsObservationOpen] = useState(false);
   const [isLoadingPatient, setIsLoadingPatient] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -105,6 +107,7 @@ function History() {
   useEffect(() => {
     patientRequestId.current += 1;
     setSelectedPatient(null);
+    setSelectedExam(null);
     setIsObservationOpen(false);
     setIsLoadingPatient(false);
   }, [selectedDate]);
@@ -123,6 +126,20 @@ function History() {
   }, [isObservationOpen]);
 
   const hasObservation = Boolean(String(selectedPatient?.observation ?? '').trim());
+
+  const handleExamRegistered = async (examId, data) => {
+    try {
+      const response = await getPatientsDateOrder(selectedDate);
+      const patientList = Array.isArray(response)
+        ? response
+        : response?.patients ?? response?.data ?? [];
+
+      if (Array.isArray(patientList)) setPatients(patientList);
+      setSelectedExam({ id: examId, processedId: data.processed_id });
+    } catch (error) {
+      console.error('No fue posible actualizar la lista de exámenes:', error);
+    }
+  };
 
   return (
     <div className="dashboard-content">
@@ -145,6 +162,8 @@ function History() {
             <List
               patients={patients}
               onSelectPatient={handleSelectPatient}
+              onSelectExam={(id, processedId) => setSelectedExam({ id, processedId })}
+              onClearExam={() => setSelectedExam(null)}
               selectedPatientId={selectedPatient?.id}
             />
           )}
@@ -257,6 +276,11 @@ function History() {
                 </div>
               </div>
             </article>
+            <Examen
+              examId={selectedExam?.id}
+              processedId={selectedExam?.processedId}
+              onRegistered={handleExamRegistered}
+            />
             </>
           )}
         </section>

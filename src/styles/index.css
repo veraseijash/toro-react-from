@@ -877,6 +877,147 @@ body {
   overflow: visible;
 }
 
+.card-white.patient-exam-card {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 325px);
+  margin-top: 1rem;
+  overflow: hidden;
+  color: #292c33;
+  border-color: #292c33;
+  background: #fff;
+}
+
+.patient-exam-card-header,
+.patient-exam-card-footer {
+  color: #f0dce9;
+  background:
+    radial-gradient(circle at 82% 5%, rgba(148, 139, 126, 0.2), transparent 35%),
+    linear-gradient(145deg, #4b4a4b 0%, #3d3d41 48%, #30343e 100%);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  min-height: 60px !important;
+}
+
+.patient-exam-card-header {
+  display: grid;
+  padding: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.patient-exam-card-header span:last-child,
+.patient-exam-card-row span:last-child {
+  text-align: right;
+}
+
+.patient-exam-card-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px;
+  overflow-y: auto;
+  color: #292c33;
+}
+
+.patient-exam-card-row {
+  display: grid;
+  padding: 0.5rem 0;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  border-bottom: 1px solid rgba(41, 44, 51, 0.2);
+}
+
+.patient-exam-card-message {
+  margin: 0;
+  color: #292c33;
+}
+
+.patient-exam-card-footer {
+  min-height: 1rem;
+  padding: 16px;
+  text-align: right;
+}
+
+.patient-exam-format {
+  width: 100%;
+}
+
+.patient-exam-format-row {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  align-items: center;
+  gap: 5px;
+}
+
+.patient-exam-format-column {
+  min-width: 0;
+  padding: 0 0.25rem;
+}
+
+.patient-exam-format-text,
+.patient-exam-format-text p {
+  margin: 0;
+  color: #292c33;
+}
+
+.patient-exam-format-label {
+  font-weight: 600;
+}
+
+.patient-exam-format-control {
+  width: 100%;
+  min-height: 40px;
+  color: #292c33;
+  border-color: rgba(41, 44, 51, 0.45);
+  background-color: rgba(255, 255, 255, 0.72);
+}
+
+.patient-exam-format-control:focus {
+  color: #292c33;
+  border-color: #292c33;
+  background-color: #fff;
+  box-shadow: 0 0 0 0.2rem rgba(41, 44, 51, 0.15);
+}
+
+.patient-exam-format input.form-control {
+  color: #212529;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  background: #fff;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+.patient-exam-format input.form-control:hover {
+  border-color: #dee2e6;
+}
+
+.patient-exam-format input.form-control:focus {
+  color: #212529;
+  border-color: #86b7fe;
+  background: #fff;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+@media (max-width: 767.98px) {
+  .patient-exam-card-header {
+    font-size: 1rem;
+  }
+
+  .patient-exam-format-row {
+    flex-wrap: wrap;
+  }
+
+  .patient-exam-format-column {
+    width: 100% !important;
+    margin-bottom: 0.4rem;
+    text-align: left !important;
+  }
+}
+
 .patient-summary-body {
   display: grid;
   min-height: 0;
