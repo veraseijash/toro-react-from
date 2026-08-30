@@ -24,6 +24,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ico-jeringa:before {
+  content: "\ecf0";
+}
+.ico-group-exams:before {
+  content: "\ecf1";
+}
 .ico-activity:before {
   content: "\ebd3";
 }

@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
 :root {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", sans-serif;
   background-color: #f5f5f5;
   color: #212529;
 
@@ -39,6 +41,8 @@
   --text-info: #0dcaf0;
   --text-light: #e1ded4;
   --text-dark: #242932;
+
+  --bs-body-font-family: "Inter", sans-serif;
 }
 
 html,
@@ -862,6 +866,12 @@ body {
       linear-gradient(145deg, #557b98 0%, #365b77 48%, #29465f 100%) !important;
 }
 
+.patient-card-canceled,
+.patient-card-canceled:hover,
+.patient-card-canceled:focus-visible {
+  background: linear-gradient(145deg, #747474 0%, #66676a 52%, #5b5d61 100%) !important;
+}
+
 .patient-card:focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.8);
   outline-offset: 2px;
@@ -879,6 +889,11 @@ body {
       linear-gradient(145deg, #557b98 0%, #365b77 48%, #29465f 100%) !important;
 }
 
+.patient-summary-card.patient-summary-card-canceled {
+  border-color: rgba(255, 255, 255, 0.34) !important;
+  background: linear-gradient(145deg, #747474 0%, #66676a 52%, #5b5d61 100%) !important;
+}
+
 .card.patient-summary-card {
   overflow: visible;
 }
@@ -886,7 +901,7 @@ body {
 .card-white.patient-exam-card {
   display: flex;
   width: 100%;
-  height: calc(100vh - 325px);
+  height: calc(100vh - 267px);
   margin-top: 1rem;
   overflow: hidden;
   color: #292c33;
@@ -923,7 +938,20 @@ body {
   min-height: 0;
   padding: 16px;
   overflow-y: auto;
-  color: #292c33;
+}
+
+.patient-exam-card-body,
+.patient-exam-card-body * {
+  color: #292c33 !important;
+  font-size: 0.85rem !important;
+}
+
+.patient-exam-card-body sup {
+  position: relative;
+  top: -0.4em;
+  vertical-align: baseline;
+  font-size: 0.75em !important;
+  line-height: 0;
 }
 
 .patient-exam-card-row {
@@ -1155,6 +1183,22 @@ body {
   gap: 0.9rem;
 }
 
+.patient-canceled-icon {
+  position: absolute;
+  top: 0rem;
+  right: 0rem;
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: #66676a;
+  font-size: 1rem;
+  z-index: 1;
+}
+
 .patient-avatar {
   width: 36px;
   height: 36px;
@@ -1379,6 +1423,135 @@ body {
   border-color: rgba(255, 255, 255, 0.25);
 }
 
+.patient-report-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1060;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgb(0 0 0 / 55%);
+}
+
+.patient-report-print-only {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.patient-report {
+  width: min(100%, 980px);
+  max-height: calc(100vh - 3rem);
+  overflow: auto;
+  padding: 1.5rem;
+  background: #fff;
+  color: #212529;
+  border-radius: 0.5rem;
+}
+
+.patient-report-actions {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+  background: #fff;
+}
+
+.patient-report-document {
+  color: #212529;
+}
+
+.patient-report-document :is(h1, h2, h3, h4, h5, h6, p) {
+  color: inherit;
+}
+
+.patient-report-body,
+.patient-report-body * {
+  font-size: 10px !important;
+}
+
+.patient-report-body sup {
+  position: relative;
+  top: -0.4em;
+  vertical-align: baseline;
+  font-size: 0.75em !important;
+  line-height: 0;
+}
+
+.patient-report-page {
+  width: 215.9mm;
+  min-height: 279.4mm;
+  margin: 0 auto 1rem;
+  overflow: hidden;
+  background: #fff;
+  break-after: page;
+}
+
+.patient-report-page:last-child {
+  break-after: auto;
+}
+
+.patient-report-exam {
+  break-inside: avoid;
+  margin-top: 1rem;
+}
+
+@media print {
+  @page {
+    size: Letter;
+    margin: 0 15mm;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .patient-report-overlay,
+  .patient-report-overlay * {
+    visibility: visible;
+  }
+
+  .patient-report-overlay {
+    position: absolute;
+    inset: 0 auto auto 0;
+    display: block;
+    padding: 0;
+    background: #fff;
+  }
+
+  .patient-report-print-only {
+    visibility: visible;
+  }
+
+  .patient-report {
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .patient-report-actions {
+    display: none;
+  }
+
+  .patient-report-page {
+    width: 185.9mm;
+    height: 279mm;
+    min-height: 279mm;
+    margin: 0;
+    box-sizing: border-box;
+  }
+}
+
 .patient-list-empty {
   margin-top: 1.25rem;
   color: var(--bs-gray-500, #adb5bd);
@@ -1389,10 +1562,119 @@ body {
   min-height: 24px;
 }
 
+.setting-exams-page {
+  display: flex;
+  height: calc(100vh - 3rem);
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.setting-exams-columns {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 1.5rem;
+  overflow: hidden;
+}
+
+.setting-exams-groups,
+.setting-exams-detail {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.setting-exams-groups {
+  display: flex;
+  flex-direction: column;
+}
+
+.setting-exams-groups h2 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+}
+
+.setting-exams-group-list {
+  display: flex;
+  min-height: 0;
+  padding: 0 0.5rem 0 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.setting-exams-group-list li {
+  position: relative;
+  display: flex;
+  padding: 0.8rem 0.9rem;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 10px;
+  background: rgba(61, 61, 65, 0.78);
+  transition: background-color 0.2s ease;
+}
+
+.setting-exams-group-list li:hover {
+  background-color: rgba(130, 130, 134, 0.45);
+}
+
+.setting-exams-its-exam-icon {
+  position: absolute !important;
+  top: 0.4rem;
+  right: 0.45rem;
+  font-size: 0.85rem !important;
+}
+
+.setting-exams-group-list .ico {
+  flex: 0 0 auto;
+  color: var(--sidebar-text);
+  font-size: 1.25rem;
+}
+
+.setting-exams-group-icon {
+  position: relative;
+}
+
+.setting-exams-group-icon-annulled::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.65rem;
+  height: 2px;
+  content: '';
+  background: currentColor;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  transform-origin: center;
+}
+
+.setting-exams-group-description {
+  color: #cbb9bf;
+}
+
+.setting-exams-status {
+  color: var(--bs-gray-500, #adb5bd);
+}
+
+@media (max-width: 767.98px) {
+  .setting-exams-page {
+    height: calc(100vh - 7rem);
+  }
+
+  .setting-exams-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .home-refresh-icon {
   position: absolute;
   top: 0;
-  right: -1.5rem;
+  right: -2rem;
   color: color-mix(in srgb, var(--text-secondary) 55%, transparent);
   font-size: 24px;
   line-height: 1;
@@ -2505,8 +2787,11 @@ body {
   padding: 1rem 1.25rem 0.75rem;
   color: #24211e;
   background: linear-gradient(180deg, #e3ddd1 0%, #d0c9bc 100%);
-  text-align: center;
+  text-align: left;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.52);
+}
+.modal-body .form-label {
+  color: #171717;
 }
 
 .modal-footer {

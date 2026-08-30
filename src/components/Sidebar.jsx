@@ -4,30 +4,18 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import toroLogo from '../assets/images/toro.svg';
 import useAuth from '../context/useAuth';
 import { useSocket } from '../context/SocketContext';
+import { IMAGES_BASE_URL, MENU_ITEMS } from '../config/appConfig';
 import {
   countUnreadByRecipientUserId,
   findUnreadByUserId,
 } from '../services/messagesServices';
-
-const menuItems = [
-  { to: '/', label: 'Inicio', icon: 'ico-home6', end: true },
-  { to: '/historia', label: 'Historia', icon: 'ico-clipboard-clock', collapseOnClick: true },
-  {
-    id: 'cuenta',
-    label: 'Mi cuenta',
-    icon: 'ico-user4',
-    children: [
-      { to: '/login', label: 'Iniciar sesión' },
-      { to: '/content', label: 'Mi contenido' },
-    ],
-  },
-];
+import { hasPermission } from '../utils/permissions';
 
 function UnreadConversation({ message, onSelect }) {
   const [photoError, setPhotoError] = useState(false);
   const sender = message.sender;
   const senderPhotoUrl = sender?.url_photo
-    ? `http://localhost:3000/images/${sender.url_photo.replace(/^\/+/, '')}`
+    ? `${IMAGES_BASE_URL}/${sender.url_photo.replace(/^\/+/, '')}`
     : null;
 
   return (
@@ -108,6 +96,9 @@ function Sidebar() {
   const photoUrl = session?.user?.url_photo
     ? `http://localhost:3000/images/${session.user.url_photo.replace(/^\/+/, '')}`
     : null;
+  const canShowMenuItem = (item) => (
+    hasPermission(session?.user?.permissions, item.permission)
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -283,7 +274,9 @@ function Sidebar() {
         <div className="sidebar-section-title">MENÚ PRINCIPAL</div>
 
         <nav className="sidebar-nav" aria-label="Navegación principal">
-          {menuItems.map((item) => {
+          {MENU_ITEMS.map((item) => {
+            if (!canShowMenuItem(item)) return null;
+
             if (!item.children) {
               return (
                 <NavLink
@@ -305,7 +298,10 @@ function Sidebar() {
               );
             }
 
-            const hasActiveChild = item.children.some((child) => pathname === child.to);
+            const visibleChildren = item.children.filter(canShowMenuItem);
+            if (visibleChildren.length === 0) return null;
+
+            const hasActiveChild = visibleChildren.some((child) => pathname === child.to);
             const isOpen = openGroups[item.id] ?? hasActiveChild;
 
             return (
@@ -323,7 +319,7 @@ function Sidebar() {
                 </button>
 
                 <div className="sidebar-submenu" id={`sidebar-group-${item.id}`}>
-                  {item.children.map((child) => (
+                  {visibleChildren.map((child) => (
                     <NavLink
                       key={child.to}
                       to={child.to}

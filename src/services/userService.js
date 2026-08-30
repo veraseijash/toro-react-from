@@ -19,3 +19,8 @@ export const getVisibleUsersWithUnreadMessageCount = async (userId) => {
   const response = await api.get(`/users/visible-with-unread-messages/${userId}/`);
   return response.data;
 };
+
+export const getUserById = async (id) => {
+  const response = await api.get(`/users/${id}/`);
+  return response.data;
+};

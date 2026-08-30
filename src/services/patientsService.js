@@ -19,3 +19,13 @@ export const updateExam = async (id, data) => {
   const response = await api.patch(`/exams/${id}/`, data);
   return response.data;
 };
+
+export const getPatientIdValidatedResult = async (id) => {
+  const response = await api.get(`/patients/validresult/${id}`);
+  return response.data;
+};
+
+export const updatePatient = async (id, modify) => {
+  const response = await api.patch(`/patients/${id}/`, modify);
+  return response.data;
+}

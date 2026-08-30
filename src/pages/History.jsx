@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import List from '../components/patients/List';
 import Examen from '../components/patients/Examen';
+import ReportPatient from '../components/patients/ReportPatient';
 import { getPatient, getPatientsDateOrder } from '../services/patientsService';
+import { getUserById } from '../services/userService';
 
 const formatDeliveryDate = (value) => {
   if (!value) return '';
@@ -30,6 +32,21 @@ const formatAmount = (value) => {
   }).format(amount);
 };
 
+const formatCancellationDate = (value) => {
+  if (!value) return '';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${day}-${month}-${year} ${hours}:${minutes}`;
+};
+
 function History() {
   const now = new Date();
   const currentDate = [
@@ -44,11 +61,16 @@ function History() {
   const [isObservationOpen, setIsObservationOpen] = useState(false);
   const [isLoadingPatient, setIsLoadingPatient] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [reportPatientId, setReportPatientId] = useState(null);
+  const [cancellationUserName, setCancellationUserName] = useState('');
   const requestId = useRef(0);
   const patientRequestId = useRef(0);
   const observationDropdownRef = useRef(null);
+  const closePatientReport = useCallback(() => setReportPatientId(null), []);
 
   const handleSelectPatient = async (id) => {
+    if (String(selectedPatient?.id) === String(id)) return;
+
     const currentRequestId = patientRequestId.current + 1;
     patientRequestId.current = currentRequestId;
     setIsLoadingPatient(true);
@@ -66,6 +88,16 @@ function History() {
       if (patientRequestId.current === currentRequestId) setSelectedPatient(null);
     } finally {
       if (patientRequestId.current === currentRequestId) setIsLoadingPatient(false);
+    }
+  };
+
+  const handleSelectExam = (patient, exam) => {
+    if (exam?.id == null) return;
+
+    setSelectedExam({ id: exam.id, processedId: exam.processed_id });
+
+    if (String(selectedPatient?.id) !== String(patient?.id)) {
+      handleSelectPatient(patient?.id);
     }
   };
 
@@ -105,6 +137,40 @@ function History() {
   }, [selectedDate]);
 
   useEffect(() => {
+    const cancellationUserId = selectedPatient?.user_id_canceled;
+    const embeddedCancellationUser = selectedPatient?.canceledUser
+      ?? selectedPatient?.cancellationUser
+      ?? selectedPatient?.userCanceled;
+
+    if (!cancellationUserId) {
+      setCancellationUserName('');
+      return undefined;
+    }
+
+    if (embeddedCancellationUser?.name) {
+      setCancellationUserName(embeddedCancellationUser.name);
+      return undefined;
+    }
+
+    let isActive = true;
+    setCancellationUserName('');
+
+    getUserById(cancellationUserId)
+      .then((response) => {
+        const user = response?.user ?? response?.data ?? response;
+        if (isActive) setCancellationUserName(user?.name ?? 'Usuario desconocido');
+      })
+      .catch(() => {
+        if (isActive) setCancellationUserName('Usuario desconocido');
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [selectedPatient?.user_id_canceled, selectedPatient?.canceledUser,
+    selectedPatient?.cancellationUser, selectedPatient?.userCanceled]);
+
+  useEffect(() => {
     patientRequestId.current += 1;
     setSelectedPatient(null);
     setSelectedExam(null);
@@ -126,6 +192,8 @@ function History() {
   }, [isObservationOpen]);
 
   const hasObservation = Boolean(String(selectedPatient?.observation ?? '').trim());
+  const isSelectedPatientCanceled = selectedPatient?.canceled === true
+    || Number(selectedPatient?.canceled) === 1;
 
   const handleExamRegistered = async (examId, data) => {
     try {
@@ -141,29 +209,46 @@ function History() {
     }
   };
 
+  const handlePatientAnnulled = (patientId, updatedPatient) => {
+    setPatients((currentPatients) => currentPatients.map((patient) => {
+      const currentPatientId = patient.id ?? patient.patient_id ?? patient.patientId;
+      return String(currentPatientId) === String(patientId)
+        ? { ...patient, ...updatedPatient }
+        : patient;
+    }));
+
+    setSelectedPatient((currentPatient) => (
+      String(currentPatient?.id) === String(patientId)
+        ? { ...currentPatient, ...updatedPatient }
+        : currentPatient
+    ));
+  };
+
   return (
     <div className="dashboard-content">
       <span
         className={`ico ico-refresh-cw home-refresh-icon${isRefreshing ? ' refreshing' : ''}`}
         aria-hidden="true"
       />
-      <div className="d-flex align-items-center gap-4 w-50">
-        <h1>Historia</h1>
-        <input
-          type="date"
-          className="form-control"
-          value={selectedDate}
-          onChange={(event) => setSelectedDate(event.target.value)}
-        />
-      </div>
       <div className="history-columns">
-        <section className="history-list-column" aria-label="Lista de pacientes">
+        <section className="history-list-column" aria-label="Lista de pacientes">        
+          <div className="d-flex align-items-center gap-4">
+            <h1>Historia</h1>
+            <input
+              type="date"
+              className="form-control"
+              value={selectedDate}
+              onChange={(event) => setSelectedDate(event.target.value)}
+            />
+          </div>
           {!isRefreshing && (
             <List
               patients={patients}
               onSelectPatient={handleSelectPatient}
-              onSelectExam={(id, processedId) => setSelectedExam({ id, processedId })}
+              onSelectExam={handleSelectExam}
               onClearExam={() => setSelectedExam(null)}
+              onPrintResults={setReportPatientId}
+              onPatientAnnulled={handlePatientAnnulled}
               selectedPatientId={selectedPatient?.id}
             />
           )}
@@ -172,7 +257,7 @@ function History() {
           {isLoadingPatient && <p className="patient-detail-status">Cargando paciente...</p>}
           {!isLoadingPatient && selectedPatient && (
             <>
-            <article className="card patient-summary-card">
+            <article className={`card patient-summary-card${isSelectedPatientCanceled ? ' patient-summary-card-canceled' : ''}`}>
               <div className="card-body patient-summary-body">
                 <div className="patient-summary-column">
                   <div className="patient-summary-name">
@@ -206,6 +291,22 @@ function History() {
                   <div className="patient-summary-row">
                     <span><strong>Atendido:</strong> {selectedPatient.user?.name}</span>
                   </div>
+                  {isSelectedPatientCanceled && (
+                    <>
+                      <div className="patient-summary-row text-warning">
+                        <span>
+                          <span className="ico ico-user-times me-2" aria-hidden="true" />
+                          <strong>Cancelado por:</strong> {cancellationUserName || 'Cargando...'}
+                        </span>
+                      </div>
+                      <div className="patient-summary-row text-warning">
+                        <span>
+                          <strong>Fecha de cancelación:</strong>{' '}
+                          {formatCancellationDate(selectedPatient.cancellation_date)}
+                        </span>
+                      </div>
+                    </>
+                  )}
                   <div
                     className="patient-summary-row patient-observation-dropdown"
                     ref={observationDropdownRef}
@@ -285,6 +386,10 @@ function History() {
           )}
         </section>
       </div>
+      <ReportPatient
+        patientId={reportPatientId}
+        onClose={closePatientReport}
+      />
     </div>
   );
 }

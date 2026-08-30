@@ -38,7 +38,6 @@ function Login() {
 
     try {
       const { user, token } = await getUserSession(formData);
-
       if (!user || !token) {
         throw new Error('La respuesta del servidor no contiene una sesión válida');
       }
