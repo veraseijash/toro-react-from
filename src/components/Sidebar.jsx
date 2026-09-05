@@ -323,7 +323,13 @@ function Sidebar() {
                     <NavLink
                       key={child.to}
                       to={child.to}
-                      onClick={closeSidebar}
+                      onClick={() => {
+                        closeSidebar();
+                        if (child.collapseOnClick) {
+                          setIsSidebarHoverEnabled(false);
+                          setIsCollapsed(true);
+                        }
+                      }}
                       className={({ isActive }) => `sidebar-sublink${isActive ? ' active' : ''}`}
                     >
                       <span className="sidebar-submenu-dot" aria-hidden="true" />

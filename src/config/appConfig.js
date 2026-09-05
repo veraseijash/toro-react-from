@@ -27,6 +27,7 @@ export const MENU_ITEMS = [
         to: '/configuracion/examenes',
         label: 'Lista de exámenes',
         permission: 'setting-exams',
+        collapseOnClick: true,
       },
     ],
   },

@@ -1617,12 +1617,153 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 10px;
   background: rgba(61, 61, 65, 0.78);
-  transition: background-color 0.2s ease;
+  cursor: grab;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  user-select: none;
 }
 
 .setting-exams-group-list li:hover {
   background-color: rgba(130, 130, 134, 0.45);
 }
+
+.setting-exams-group-list li.is-dragging {
+  cursor: grabbing;
+  opacity: 0.55;
+}
+
+.setting-exams-group-list li.is-drag-over {
+  background-color: rgba(180, 180, 184, 0.58);
+}
+
+.setting-exams-group-list li.is-selected,
+.setting-exams-group-list li.is-selected:hover,
+.setting-exams-group-list li.is-selected:focus-visible {
+  border-color: #456b88;
+  background: linear-gradient(145deg, #557b98 0%, #365b77 48%, #29465f 100%);
+}
+
+.setting-exams-group-list li:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+}
+
+.setting-exams-detail { display: flex; flex-direction: column; gap: 0.8rem; }
+.setting-exams-table-panel { min-height: 0; flex: 1; }
+.card.setting-exams-detail-header {
+  position: relative;
+  z-index: 10;
+  flex: 0 0 auto;
+  overflow: visible;
+}
+.setting-exams-detail-header .card-body {
+  display: flex;
+  min-height: 0;
+  padding: 0.75rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.setting-exams-selected-description { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.setting-exams-header-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 0.55rem; }
+.setting-exams-header-actions .btn { text-transform: uppercase; }
+.setting-exams-header-icon {
+  padding: 0.35rem 0.45rem;
+  border: 0;
+  background: transparent;
+  font-size: 1.15rem;
+}
+.setting-exams-group-menu-wrap { position: relative; }
+.setting-exams-group-menu {
+  top: calc(100% + 0.25rem);
+  right: 0;
+  min-width: 165px;
+}
+
+.setting-exams-group-menu button { white-space: nowrap; }
+.setting-exams-menu-separator { height: 1px; margin: 0.3rem 0; background: rgba(255, 255, 255, 0.25); }
+.setting-exams-table-body {
+  display: flex;
+  min-height: 0;
+  padding: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+.setting-exams-table-scroll { min-height: 0; flex: 1; overflow: auto; }
+.setting-exams-table { width: 100%; min-width: 980px; border-collapse: collapse; color: inherit; font-size: 0.82rem; }
+.setting-exams-table th,
+.setting-exams-table td { padding: 0.7rem 0.65rem; border-bottom: 1px solid rgba(255, 255, 255, 0.18); text-align: left; white-space: nowrap; }
+.setting-exams-table th {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  color: inherit;
+  background: #414146;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.setting-exams-table th:nth-child(2) { min-width: 230px; }
+.setting-exams-table tbody tr { transition: background-color 0.2s ease; }
+.setting-exams-table tbody tr:hover {
+  background: linear-gradient(145deg, #557b98 0%, #365b77 48%, #29465f 100%);
+}
+.setting-exams-table tbody tr:hover .text-primary { color: #fff !important; }
+.setting-exams-table .setting-exams-center { text-align: center; }
+.setting-exams-table .setting-exams-price { text-align: right; }
+.setting-exams-table .ico-eye4,
+.setting-exams-table .ico-eye-off,
+.setting-exams-action { 
+  color: var(--bs-card-color); 
+  font-size: 0.92rem;
+}
+.setting-exams-table-message { height: 5rem; text-align: center !important; }
+.setting-exams-action,
+.setting-exams-page-buttons button { padding: 0.25rem; border: 0; background: transparent; }
+
+.setting-exams-actions-cell { position: relative; }
+.setting-exams-actions-menu {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% - 0.35rem);
+  right: 0.5rem;
+  min-width: 110px;
+  padding: 0.35rem 0;
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 7px;
+  background: #3d3d41;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
+  list-style: none;
+}
+
+.setting-exams-actions-menu button {
+  width: 100%;
+  padding: 0.45rem 0.8rem;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+}
+
+.setting-exams-actions-menu button:hover,
+.setting-exams-actions-menu button:focus-visible { background: rgba(255, 255, 255, 0.14); }
+
+.setting-exams-pagination { display: flex; min-height: 64px; padding: 0.75rem 1rem; align-items: center; justify-content: flex-end; gap: 2.25rem; font-size: 0.78rem; }
+.setting-exams-pagination label,
+.setting-exams-page-buttons { display: flex; align-items: center; gap: 0.8rem; }
+.setting-exams-pagination select {
+  padding: 0.35rem 1.6rem 0.35rem 0.25rem;
+  border: 0;
+  border-bottom: 1px solid #fff;
+  background-color: transparent;
+  color: #fff;
+}
+
+.setting-exams-pagination select option {
+  color: #212529;
+}
+.setting-exams-page-buttons button { color: #777; }
+.setting-exams-page-buttons button:disabled { color: #c8c8c8; }
 
 .setting-exams-its-exam-icon {
   position: absolute !important;
