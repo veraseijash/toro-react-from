@@ -3750,6 +3750,12 @@
 .ico-paperclip:before {
   content: "\e9ab";
 }
+.ico-check-star-o:before {
+  content: "\ecf3";
+}
+.ico-check-star:before {
+  content: "\ecf4";
+}
 .ico-sidebarOut:before {
   content: "\ecee";
 }

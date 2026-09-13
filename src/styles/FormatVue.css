@@ -1,0 +1,60 @@
+.editor-exam-modal .editor-exam-format-panel.active {
+  height: 100%;
+  min-height: 0;
+}
+
+.setting-format-vue {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 1rem;
+  height: 100%;
+  min-height: 0;
+}
+
+.setting-format-vue-canvas {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem;
+  color: #171717;
+  background-color: #F0F0F0;
+  border-radius: 13px;
+}
+
+.setting-format-vue-sidebar.card {
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  margin-bottom: 0;
+}
+
+.setting-format-vue-row {
+  display: flex;
+  color: #292c33 !important;
+  font-size: 0.85rem !important;
+  width: 100%;
+  border: 2px solid #e4f1ed;
+}
+
+.setting-format-vue-row-content {
+  display: flex;
+  align-items: center;
+  width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  min-height: 30px;
+  background-color: white;
+}
+
+.setting-format-vue-column {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.setting-format-vue-text p {
+  margin: 0;
+}
+
+.setting-format-vue-canvas :is(p, h1, h2, h3, h4, h5, h6) {
+  color: inherit;
+}

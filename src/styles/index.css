@@ -186,6 +186,10 @@ body {
   min-height: 100vh;
 }
 
+.ico-sm {
+  font-size: 120%;
+}
+
 .app-shell {
   min-height: 100vh;
 }
@@ -2322,7 +2326,7 @@ body {
 }
 
 .form-control {
-  min-height: 34px;
+  min-height: 38px;
   padding: 0.42rem 0.8rem;
   color: #f3f1ed;
   border: 1px solid rgba(35, 35, 35, 0.72);
@@ -2907,7 +2911,7 @@ body {
   font-size: 1rem;
   font-weight: 500;
   line-height: 1.2;
-  text-align: center;
+  text-align: left;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.82);
 }
 
@@ -2931,8 +2935,152 @@ body {
   text-align: left;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.52);
 }
-.modal-body .form-label {
+.modal-body .form-label,
+.modal-body .form-check-label {
   color: #171717;
+}
+
+.editor-exam-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editor-exam-modal .nav-tabs {
+  flex-shrink: 0;
+  --bs-nav-link-color: #f3f1ed;
+  --bs-nav-link-hover-color: #f3f1ed;
+  --bs-nav-tabs-link-active-color: #f3f1ed;
+  --bs-nav-tabs-link-active-bg: transparent;
+  --bs-nav-tabs-link-active-border-color: #fff #fff transparent;
+  border-bottom: 0;
+}
+
+.editor-exam-modal .nav-tabs .nav-link {
+  margin-bottom: 0;
+  border-bottom-color: #fff;
+}
+
+.editor-exam-modal .nav-tabs .nav-link.active {
+  border-bottom-color: transparent;
+}
+
+.editor-exam-modal .nav-tabs::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #fff;
+}
+
+.editor-exam-modal .tab-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border: 1px solid #fff;
+  border-top: 0;
+  padding: 1rem;
+}
+
+.editor-exam-modal .modal-body,
+.setting-exams-prices-modal .modal-body,
+.setting-exams-prices-modal .modal-footer {
+  color: #e7e5e2;
+  background:
+    radial-gradient(circle at 82% 5%, rgba(148, 139, 126, 0.2), transparent 35%),
+    linear-gradient(145deg, #4b4a4b 0%, #3d3d41 48%, #30343e 100%);
+  text-shadow: none;
+}
+
+.setting-exams-prices-modal .modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.34);
+}
+
+.editor-exam-modal .form-label,
+.editor-exam-modal .form-check-label,
+.setting-exams-prices-modal .form-label,
+.setting-exams-prices-modal .form-check-label {
+  color: inherit;
+}
+
+.form-control,
+.form-select,
+.input-group-text {
+  color: #e7e5e2;
+  background: linear-gradient(
+    90deg,
+    rgba(102, 102, 99, 0.88) 0%,
+    rgba(126, 122, 114, 0.9) 100%
+  );
+  box-shadow:
+    inset 0 2px 5px rgba(19, 19, 19, 0.58),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.2),
+    0 1px 2px rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.34);
+}
+
+.form-select {
+  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e7e5e2' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  background-image:
+    var(--bs-form-select-bg-img),
+    linear-gradient(
+      90deg,
+      rgba(102, 102, 99, 0.88) 0%,
+      rgba(126, 122, 114, 0.9) 100%
+    );
+  background-position: right 0.75rem center, center;
+  background-size: 16px 12px, 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.setting-exams-prices-modal input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.setting-exams-prices-modal input[type='number']::-webkit-inner-spin-button,
+.setting-exams-prices-modal input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.setting-exams-increment-field {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.setting-exams-increment-field .form-control {
+  width: 100%;
+  padding-right: 2rem;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.setting-exams-increment-buttons {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  bottom: 2px;
+  display: flex;
+  flex-direction: column;
+}
+
+.setting-exams-increment-buttons button {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+.setting-exams-increment-buttons button:focus-visible {
+  outline: 1px solid currentColor;
 }
 
 .modal-footer {

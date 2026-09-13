@@ -1,0 +1,62 @@
+.editor-exam-modal .worksheet-editor {
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: var(--bs-border-radius);
+}
+
+.worksheet-editor .ql-toolbar.ql-snow,
+.worksheet-editor .ql-container.ql-snow {
+  border: 0;
+  color: inherit;
+  font-family: inherit;
+}
+
+.worksheet-editor .ql-toolbar.ql-snow {
+  position: sticky;
+  top: -1rem;
+  z-index: 2;
+  background: linear-gradient(90deg, #666663, #7e7a72);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: var(--bs-border-radius) var(--bs-border-radius) 0 0;
+}
+
+.worksheet-editor .ql-container {
+  font-size: 1rem;
+}
+
+.worksheet-editor .ql-editor {
+  min-height: 60vh;
+  overflow-wrap: anywhere;
+}
+
+.worksheet-editor .ql-editor.ql-blank::before {
+  color: inherit;
+  opacity: 0.65;
+}
+
+.worksheet-editor .ql-snow .ql-stroke { stroke: currentColor; }
+.worksheet-editor .ql-snow .ql-fill { fill: currentColor; }
+.worksheet-editor .ql-snow .ql-picker,
+.worksheet-editor .ql-snow button { color: inherit; }
+
+.worksheet-editor .ql-snow .ql-picker-options {
+  color: #e7e5e2;
+  background: #3d3d41;
+  border-color: rgba(255, 255, 255, 0.34);
+}
+
+.worksheet-editor .ql-snow button:hover,
+.worksheet-editor .ql-snow button:focus-visible,
+.worksheet-editor .ql-snow button.ql-active,
+.worksheet-editor .ql-snow .ql-picker-label:hover,
+.worksheet-editor .ql-snow .ql-picker-label.ql-active,
+.worksheet-editor .ql-snow .ql-picker-item:hover,
+.worksheet-editor .ql-snow .ql-picker-item.ql-selected {
+  color: #ccecff;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.worksheet-editor .ql-snow .ql-picker.ql-header .ql-picker-label[data-value]:not([data-value=''])::before,
+.worksheet-editor .ql-snow .ql-picker.ql-header .ql-picker-item[data-value]:not([data-value=''])::before {
+  content: 'Título ' attr(data-value);
+}
