@@ -35,6 +35,12 @@ export const MENU_ITEMS = [
         permission: 'order-exams',
         collapseOnClick: true,
       },
+      {
+        to: '/configuracion/routines',
+        label: 'Rutinas de exámenes',
+        permission: 'routines-exams',
+        collapseOnClick: true,
+      },
     ],
   },
 ];

@@ -53,7 +53,7 @@ function GroupCard({ group }) {
             <span className="ico ico-user4" aria-label="Usuario sin foto"></span>
           )}
           <div className="sidebar-profile-text">
-            <span>Acargo:</span>
+            <span>A cargo:</span>
             <strong>{group.user?.name || 'Sin usuario asignado'}</strong>
           </div>
         </div>

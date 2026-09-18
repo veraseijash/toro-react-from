@@ -1,0 +1,155 @@
+.routines-exams-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.routines-exams-header h1 {
+  margin: 0;
+}
+
+.routines-exams-header .btn {
+  flex-shrink: 0;
+}
+
+.routines-exams-page .routines-exams-columns {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) 300px;
+}
+
+.routines-exams-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.routines-exams-column h2 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+}
+
+.routines-exams-settings-body {
+  flex: 1;
+  min-height: 0;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.routines-exams-page .setting-exams-group-list li {
+  cursor: pointer;
+}
+
+.routines-exams-settings-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.25rem;
+}
+
+.routines-exams-settings-button:focus-visible {
+  outline: 2px solid var(--bs-warning);
+  outline-offset: 3px;
+}
+
+.routines-exams-list .list-group-item {
+  padding: 0.85rem 1rem;
+  color: inherit;
+  background: transparent;
+  border-color: var(--bs-card-border-color);
+}
+
+.routines-exams-list .ico {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+}
+
+.routines-laboratory-groups,
+.routines-laboratory-exams {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.routines-laboratory-groups {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.routines-laboratory-card {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.routines-laboratory-group-button,
+.routines-laboratory-exam {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+}
+
+.routines-laboratory-group-button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.routines-laboratory-exam {
+  padding-left: 1.5rem;
+}
+
+.routines-laboratory-group-button:hover,
+.routines-laboratory-exam:hover {
+  background-color: rgba(130, 130, 134, 0.15);
+}
+
+.routines-laboratory-icon {
+  flex-shrink: 0;
+  color: var(--text-warning);
+  font-size: 1.25rem;
+}
+
+.routines-laboratory-add-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 0.25rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.routines-laboratory-add-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
+.routines-laboratory-add-tooltip {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.routines-laboratory-group-button:focus-visible,
+.routines-laboratory-add-button:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: -2px;
+}

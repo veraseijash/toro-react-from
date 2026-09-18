@@ -12,6 +12,7 @@ import NotFound from './pages/NotFound';
 import Chats from './pages/Chats';
 import SettingExams from './pages/SettingExams';
 import OrderExams from './pages/OrderExams';
+import RoutinesExams from './pages/RoutinesExams';
 import ProtectedRoute from './components/ProtectedRoute';
 import PermissionRoute from './components/PermissionRoute';
 import useAuth from './context/useAuth';
@@ -38,6 +39,9 @@ function App() {
               <Route path="/configuracion/ordenar" element={<OrderExams />} />
             </Route>
             <Route path="/chats" element={<Chats />} />
+            <Route element={<PermissionRoute permission="routines-exams" />}>
+              <Route path="/configuracion/routines" element={<RoutinesExams />} />
+            </Route>
           </Route>
 
           <Route path="*" element={<NotFound />} />
