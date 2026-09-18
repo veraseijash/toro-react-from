@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Modal } from 'bootstrap';
-import { getExamList, getTaxs } from '../../services/examsService';
+import { getTaxs } from '../../services/examsService';
 import WorksheetEditor from './WorksheetEditor';
-import FormatVue from './FormatVue';
+import FormatExam from './FormatExam';
 
 const TABS = [
   { id: 'detail', title: 'Detalle' },
@@ -10,11 +10,10 @@ const TABS = [
   { id: 'edit', title: 'Editar examen' },
 ];
 
-function EditorExam({ examId, onClose }) {
+function EditorExam({ examId, examlists, onClose, onSave }) {
   const modalRef = useRef(null);
   const modalInstanceRef = useRef(null);
   const [exam, setExam] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [draft, setDraft] = useState({});
@@ -22,15 +21,21 @@ function EditorExam({ examId, onClose }) {
   const [taxes, setTaxes] = useState([]);
   const [isLoadingTaxes, setIsLoadingTaxes] = useState(false);
   const [taxError, setTaxError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const savingRef = useRef(false);
 
   useEffect(() => {
     const element = modalRef.current;
     const modal = new Modal(element);
     modalInstanceRef.current = modal;
     const handleHidden = () => onClose(null);
+    const handleHide = (event) => { if (savingRef.current) event.preventDefault(); };
+    element.addEventListener('hide.bs.modal', handleHide);
     element.addEventListener('hidden.bs.modal', handleHidden);
     return () => {
       element.removeEventListener('hidden.bs.modal', handleHidden);
+      element.removeEventListener('hide.bs.modal', handleHide);
       modal.hide();
       modal.dispose();
       modalInstanceRef.current = null;
@@ -50,38 +55,30 @@ function EditorExam({ examId, onClose }) {
     setTaxError('');
     setIsLoadingTaxes(true);
     setError('');
-    setIsLoading(true);
+    setSaveError('');
     setActiveTab(TABS[0].id);
     modalInstanceRef.current?.show();
 
-    const loadExam = async () => {
-      try {
-        const response = await getExamList(examId);
-        const data = response?.data ?? response?.exam ?? response;
-        if (response?.success === false || response?.ok === false || response?.error
-          || !data || typeof data.description !== 'string') {
-          throw new Error('No se pudo cargar el examen.');
-        }
-        if (isCurrent) {
-          setExam(data);
-          setDraft({
-            description: data.description,
-            abbreviation: data.abbreviation ?? '',
-            work_sheet: data.work_sheet ?? '',
-            tax_id: String(data.tax_id ?? ''),
-            annulled: Number(data.annulled) === 1,
-            special_test: Number(data.special_test) === 1,
-            ...Object.fromEntries([1, 2, 3, 4, 5, 6].map((number) => [
-              `cost${number}`, String(Number(data[`cost${number}`] ?? 0)),
-            ])),
-          });
-        }
-      } catch {
-        if (isCurrent) setError('No se pudo cargar la información del examen. Cierra la ventana y vuelve a intentarlo.');
-      } finally {
-        if (isCurrent) setIsLoading(false);
-      }
-    };
+    const data = Array.isArray(examlists)
+      ? examlists.find((item) => String(item.id) === String(examId))
+      : null;
+    if (data && typeof data.description === 'string') {
+      setExam(data);
+      setDraft({
+        description: data.description,
+        abbreviation: data.abbreviation ?? '',
+        work_sheet: data.work_sheet ?? '',
+        format_vue: data.format_vue ?? null,
+        tax_id: String(data.tax_id ?? ''),
+        annulled: Number(data.annulled) === 1,
+        special_test: Number(data.special_test) === 1,
+        ...Object.fromEntries([1, 2, 3, 4, 5, 6].map((number) => [
+          `cost${number}`, String(Number(data[`cost${number}`] ?? 0)),
+        ])),
+      });
+    } else {
+      setError('No se encontró la información del examen en el grupo seleccionado.');
+    }
     const loadTaxes = async () => {
       try {
         const response = await getTaxs();
@@ -96,14 +93,51 @@ function EditorExam({ examId, onClose }) {
         if (isCurrent) setIsLoadingTaxes(false);
       }
     };
-    loadExam();
     loadTaxes();
     return () => { isCurrent = false; };
-  }, [examId]);
+  }, [examId, examlists]);
 
   const updateField = (name, value) => {
     setDraft((current) => ({ ...current, [name]: value }));
     setFieldErrors((current) => ({ ...current, [name]: false }));
+  };
+
+  const handleSave = async () => {
+    if (savingRef.current || !exam || error || isLoadingTaxes || taxError || !onSave) return;
+    const errors = Object.fromEntries(['description', 'abbreviation'].map((name) => [name, !draft[name]?.trim()]));
+    setFieldErrors(errors);
+    if (Object.values(errors).some(Boolean)) {
+      setActiveTab('detail');
+      return;
+    }
+    if (draft.description.length > 60 || draft.abbreviation.length > 10) {
+      setSaveError('La descripción admite hasta 60 caracteres y la abreviatura hasta 10.');
+      setActiveTab('detail');
+      return;
+    }
+    savingRef.current = true;
+    setIsSaving(true);
+    setSaveError('');
+    try {
+      await onSave(examId, {
+        ...draft,
+        tax_id: draft.tax_id === '' ? 0 : Number(draft.tax_id),
+        annulled: draft.annulled ? 1 : 0,
+        special_test: draft.special_test ? 1 : 0,
+        ...Object.fromEntries([1, 2, 3, 4, 5, 6].map((number) => [
+          `cost${number}`, Number(draft[`cost${number}`] || 0),
+        ])),
+      });
+      savingRef.current = false;
+      modalInstanceRef.current?.hide();
+    } catch (saveFailure) {
+      setSaveError(saveFailure.response?.status === 500
+        ? 'El servidor devolvió un error interno (500). Tus cambios se conservan. Revisa el detalle del error en la consola del backend.'
+        : 'No se pudo guardar el examen. Tus cambios se conservan; vuelve a intentarlo.');
+    } finally {
+      savingRef.current = false;
+      setIsSaving(false);
+    }
   };
 
   const handleTabKeyDown = (event, index) => {
@@ -124,15 +158,17 @@ function EditorExam({ examId, onClose }) {
         <div className="modal-content">
           <div className="modal-header">
             <h2 className="modal-title fs-5" id="editor-exam-title">
-              {exam?.description ?? (isLoading ? 'Cargando examen...' : 'Editar examen')}
+              {exam?.description ?? 'Editar examen'}
             </h2>
             <div className="d-flex align-items-center gap-3 ms-auto ps-3">
-              <button type="button" className="btn btn-primary" disabled>Registrar</button>
-              <button type="button" className="btn-close m-0" data-bs-dismiss="modal" aria-label="Cerrar" />
+              <button type="button" className="btn btn-primary"
+                disabled={!exam || Boolean(error) || isLoadingTaxes || Boolean(taxError) || isSaving}
+                onClick={handleSave}>{isSaving ? 'Registrando...' : 'Registrar'}</button>
+              <button type="button" className="btn-close m-0" data-bs-dismiss="modal" aria-label="Cerrar" disabled={isSaving} />
             </div>
           </div>
-          <div className="modal-body">
-            {isLoading && <p role="status">Cargando información del examen...</p>}
+          <div className="modal-body" inert={isSaving ? true : undefined}>
+            {saveError && <p className="text-danger" role="alert">{saveError}</p>}
             {error && <p className="text-danger" role="alert">{error}</p>}
             <ul className="nav nav-tabs" role="tablist" aria-label="Editor de examen">
               {TABS.map((tab, index) => (
@@ -165,7 +201,7 @@ function EditorExam({ examId, onClose }) {
                 >
                   {tab.id === 'detail' ? (
                     <div className="editor-exam-detail container">
-                      <fieldset disabled={isLoading || !exam || Boolean(error)}>
+                      <fieldset disabled={!exam || Boolean(error)}>
                         <div className="row g-3 mb-3">
                           {[['description', 'Descripción'], ['abbreviation', 'Abreviatura']].map(([name, label]) => (
                             <div className="col-6" key={name}>
@@ -176,6 +212,7 @@ function EditorExam({ examId, onClose }) {
                                 className={`form-control${fieldErrors[name] ? ' is-invalid' : ''}`}
                                 value={draft[name] ?? ''}
                                 required
+                                maxLength={name === 'description' ? 60 : 10}
                                 aria-invalid={Boolean(fieldErrors[name])}
                                 aria-describedby={fieldErrors[name] ? `editor-exam-${name}-error` : undefined}
                                 onChange={(event) => updateField(name, event.target.value)}
@@ -245,13 +282,17 @@ function EditorExam({ examId, onClose }) {
                       </fieldset>
                     </div>
                   ) : tab.id === 'worksheet' ? (
-                    exam && !isLoading && !error && <WorksheetEditor
+                    exam && !error && <WorksheetEditor
                       key={examId}
                       initialValue={exam.work_sheet ?? ''}
                       onChange={(value) => updateField('work_sheet', value)}
                     />
                   ) : (
-                    exam && !isLoading && !error && <FormatVue format={exam.format_vue} />
+                    exam && !error && <FormatExam
+                      key={examId}
+                      format={exam.format_vue}
+                      onChange={(value) => updateField('format_vue', value)}
+                    />
                   )}
                 </div>
               ))}

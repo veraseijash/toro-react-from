@@ -29,6 +29,12 @@ export const MENU_ITEMS = [
         permission: 'setting-exams',
         collapseOnClick: true,
       },
+      {
+        to: '/configuracion/ordenar',
+        label: 'Ordenar exámenes',
+        permission: 'order-exams',
+        collapseOnClick: true,
+      },
     ],
   },
 ];

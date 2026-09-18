@@ -1,0 +1,112 @@
+.order-exams-page .order-exams-drag-icon {
+  display: none;
+  flex-shrink: 0;
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+.order-exams-page .setting-exams-group-list li:hover .order-exams-drag-icon,
+.order-exams-list .list-group-item:hover .order-exams-drag-icon {
+  display: inline-block;
+}
+
+.order-exams-drag-handle {
+  display: none;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+}
+
+.order-exams-page .setting-exams-group-list li:hover .order-exams-drag-handle,
+.order-exams-page .setting-exams-group-list li:focus-within .order-exams-drag-handle,
+.order-exams-page .setting-exams-group-list li:focus-within .order-exams-drag-icon,
+.order-exams-page .setting-exams-group-list li.is-dragging .order-exams-drag-handle,
+.order-exams-page .setting-exams-group-list li.is-dragging .order-exams-drag-icon,
+.order-exams-list .list-group-item:hover .order-exams-drag-handle,
+.order-exams-list .list-group-item:focus-within .order-exams-drag-handle,
+.order-exams-list .list-group-item:focus-within .order-exams-drag-icon,
+.order-exams-list .list-group-item.is-dragging .order-exams-drag-handle,
+.order-exams-list .list-group-item.is-dragging .order-exams-drag-icon {
+  display: inline-block;
+}
+
+.order-exams-drag-handle:active {
+  cursor: grabbing;
+}
+
+.order-exams-drag-handle:disabled {
+  cursor: wait;
+}
+
+.order-exams-group-settings-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.25rem;
+}
+
+.order-exams-group-settings-button:focus-visible {
+  outline: 2px solid var(--bs-warning);
+  outline-offset: 3px;
+}
+
+.order-exams-page .setting-exams-columns {
+  grid-template-columns: 360px minmax(0, 1fr) 320px;
+}
+
+.order-exams-settings {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.order-exams-settings-body {
+  flex: 1;
+  min-height: 0;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.order-exams-settings h2,
+.order-exams-page .setting-exams-detail > h2 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+}
+
+.order-exams-page .setting-exams-detail {
+  gap: 0;
+}
+
+.order-exams-page .setting-exams-group-list li {
+  cursor: pointer;
+}
+
+.order-exams-list .list-group-item {
+  padding: 0.85rem 1rem;
+  color: inherit;
+  background: transparent;
+  border-color: var(--bs-card-border-color);
+}
+
+.order-exams-list .ico {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+}
+
+.order-exams-list .list-group-item.is-dragging {
+  cursor: grabbing;
+  opacity: 0.55;
+}
+
+.order-exams-list .list-group-item.is-drag-over {
+  background-color: rgba(180, 180, 184, 0.58);
+}

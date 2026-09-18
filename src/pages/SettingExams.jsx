@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Modal, Tooltip } from 'bootstrap';
 import { toast } from 'react-toastify';
 import EditorExam from '../components/setting/EditorExam';
-import { createExamList, updateExamList, getTaxs, createExamgroup, getExamgroup, getExamByGroupPaginated, getExamgroupsAll, updateExamgroup, updateGroupCosts } from '../services/examsService';
+import { createExamList, updateExamList, getTaxs, createExamgroup, getExamgroup, getExamgroupsAll, updateExamgroup, updateGroupCosts } from '../services/examsService';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 15, 25];
 const formatPrice = (value) => {
@@ -18,13 +18,8 @@ function SettingExams() {
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
-  const [exams, setExams] = useState([]);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [page, setPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isLoadingExams, setIsLoadingExams] = useState(false);
-  const [examsError, setExamsError] = useState('');
   const [openActionsId, setOpenActionsId] = useState(null);
   const [editingExamId, setEditingExamId] = useState(null);
   const [isUpdatingExam, setIsUpdatingExam] = useState(false);
@@ -234,6 +229,7 @@ function SettingExams() {
       setErrorMessage('');
       try {
         const response = await getExamgroupsAll();
+        console.log('Grupo exam: ', response);
         const groups = Array.isArray(response)
           ? response
           : response?.examGroups ?? response?.data ?? [];
@@ -253,55 +249,7 @@ function SettingExams() {
     return () => {
       isActive = false;
     };
-  }, [groupsRevision]);
-
-  useEffect(() => {
-    if (selectedGroupId == null) return undefined;
-    let isActive = true;
-
-    const loadExams = async () => {
-      setIsLoadingExams(true);
-      setExamsError('');
-      try {
-        const response = await getExamByGroupPaginated({
-          groupId: selectedGroupId,
-          itemsPerPage,
-          page,
-        });
-        const pageData = response?.data && !Array.isArray(response.data) ? response.data : response;
-        const pagination = response?.pagination ?? response?.meta
-          ?? pageData?.pagination ?? pageData?.meta ?? pageData ?? {};
-        const rows = Array.isArray(response)
-          ? response
-          : Array.isArray(response?.data)
-            ? response.data
-            : pageData?.data ?? pageData?.exams ?? pageData?.items ?? pageData?.results ?? [];
-        const total = Number(pagination.total ?? pagination.totalItems ?? response?.total ?? rows.length);
-        const lastPage = Number(
-          pagination.last_page ?? pagination.totalPages ?? response?.last_page
-            ?? Math.max(1, Math.ceil(total / itemsPerPage)),
-        );
-
-        if (isActive) {
-          setExams(Array.isArray(rows) ? rows : []);
-          setTotalItems(Number.isFinite(total) ? total : 0);
-          setTotalPages(Number.isFinite(lastPage) && lastPage > 0 ? lastPage : 1);
-        }
-      } catch {
-        if (isActive) {
-          setExams([]);
-          setTotalItems(0);
-          setTotalPages(1);
-          setExamsError('No fue posible cargar los exámenes del grupo.');
-        }
-      } finally {
-        if (isActive) setIsLoadingExams(false);
-      }
-    };
-
-    loadExams();
-    return () => { isActive = false; };
-  }, [selectedGroupId, itemsPerPage, page, pricesRevision]);
+  }, [groupsRevision, pricesRevision]);
 
   useEffect(() => {
     const closeActions = () => {
@@ -319,19 +267,20 @@ function SettingExams() {
   }, [selectedGroupId]);
 
   const handleHideGroup = async () => {
-    if (selectedGroupId == null || hidingGroupRef.current) return;
+    if (selectedGroupId == null || !selectedGroup || hidingGroupRef.current) return;
+    const annulled = Number(selectedGroup.annulled) === 0 ? 1 : 0;
     hidingGroupRef.current = true;
     setIsHidingGroup(true);
     setIsGroupMenuOpen(false);
     try {
-      const response = await updateExamgroup(selectedGroupId, { annulled: 1 });
+      const response = await updateExamgroup(selectedGroupId, { annulled });
       if (response?.success === false || response?.ok === false || response?.error) {
-        throw new Error('No se pudo anular el campo.');
+        throw new Error('No se pudo actualizar la visibilidad del grupo.');
       }
-      toast.success('El grupo fue anulado');
+      toast.success(annulled === 1 ? 'El grupo fue ocultado.' : 'El grupo está visible.');
       setGroupsRevision((current) => current + 1);
     } catch {
-      toast.error('No se pudo anular el campo.');
+      toast.error('No se pudo actualizar la visibilidad del grupo.');
     } finally {
       hidingGroupRef.current = false;
       setIsHidingGroup(false);
@@ -437,12 +386,37 @@ function SettingExams() {
     }
   };
 
+  const handleSaveEditedExam = async (examId, changes) => {
+    const response = await updateExamList(examId, changes);
+    if (response?.success === false || response?.ok === false || response?.error) {
+      throw new Error('No se pudo actualizar el examen.');
+    }
+    const updatedExam = response?.data?.exam ?? response?.data ?? response?.exam ?? response;
+    if (!updatedExam || typeof updatedExam !== 'object' || Array.isArray(updatedExam)
+      || String(updatedExam.id) !== String(examId)) {
+      throw new Error('El servicio no devolvió el examen actualizado.');
+    }
+    setEditingExamId(null);
+    setExamGroups((groups) => groups.map((group) => ({
+      ...group,
+      examlists: Array.isArray(group.examlists) ? group.examlists.map((exam) => (
+        String(exam.id) === String(examId) ? { ...exam, ...updatedExam } : exam
+      )) : group.examlists,
+    })));
+    toast.success('El examen fue actualizado correctamente.');
+  };
+
   const selectGroup = (groupId) => {
     setSelectedGroupId(groupId);
     setPage(1);
   };
 
   const selectedGroup = examGroups.find((group) => String(group.id) === String(selectedGroupId));
+  const groupExams = Array.isArray(selectedGroup?.examlists) ? selectedGroup.examlists : [];
+  const totalItems = groupExams.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const currentPage = Math.min(page, totalPages);
+  const exams = groupExams.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const resetDragState = () => {
     draggedIndexRef.current = null;
@@ -615,7 +589,7 @@ function SettingExams() {
                             setEditingGroupId(selectedGroupId);
                             newGroupModalInstanceRef.current?.show();
                           }}>Editar grupo</button></li>
-                          <li><button type="button" role="menuitem" disabled={isHidingGroup} onClick={handleHideGroup}>Ocultar grupo</button></li>
+                          <li><button type="button" role="menuitem" disabled={isHidingGroup} onClick={handleHideGroup}>{Number(selectedGroup?.annulled) === 0 ? 'Ocultar grupo' : 'Mostrar grupo'}</button></li>
                           <li className="setting-exams-menu-separator" role="separator" />
                           <li><button type="button" role="menuitem" onClick={openNewExam}>Nuevo examen</button></li>
                         </ul>
@@ -638,10 +612,8 @@ function SettingExams() {
                     </tr>
                   </thead>
                   <tbody>
-                    {isLoadingExams && <tr><td colSpan="11" className="setting-exams-table-message">Cargando...</td></tr>}
-                    {!isLoadingExams && examsError && <tr><td colSpan="11" className="setting-exams-table-message text-danger">{examsError}</td></tr>}
-                    {!isLoadingExams && !examsError && exams.length === 0 && <tr><td colSpan="11" className="setting-exams-table-message">No hay exámenes en este grupo.</td></tr>}
-                    {!isLoadingExams && !examsError && exams.map((exam, index) => {
+                    {exams.length === 0 && <tr><td colSpan="11" className="setting-exams-table-message">No hay exámenes en este grupo.</td></tr>}
+                    {exams.map((exam, index) => {
                       const isActive = Number(exam.annulled) !== 1;
                       const examKey = exam.id ?? `${exam.description}-${index}`;
                       return (
@@ -693,13 +665,13 @@ function SettingExams() {
                 </div>
                 <div className="setting-exams-pagination">
                 <label><span>Elementos por página</span><select value={itemsPerPage} onChange={(event) => { setItemsPerPage(Number(event.target.value)); setPage(1); }}>{PAGE_SIZE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
-                <span>{totalItems === 0 ? '0-0' : `${(page - 1) * itemsPerPage + 1}-${Math.min(page * itemsPerPage, totalItems)}`} de {totalItems}</span>
+                <span>{totalItems === 0 ? '0-0' : `${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalItems)}`} de {totalItems}</span>
                 <div className="setting-exams-page-buttons">
-                  <button type="button" onClick={() => setPage(1)} disabled={page <= 1} aria-label="Primera página"><span className="ico ico-chevrons-left" /></button>
-                  <button type="button" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page <= 1} aria-label="Página anterior"><span className="ico ico-chevron-left1" /></button>
-                  <span>{page}</span>
-                  <button type="button" onClick={() => setPage((current) => Math.min(totalPages, current + 1))} disabled={page >= totalPages} aria-label="Página siguiente"><span className="ico ico-chevron-right1" /></button>
-                  <button type="button" onClick={() => setPage(totalPages)} disabled={page >= totalPages} aria-label="Última página"><span className="ico ico-chevrons-right" /></button>
+                  <button type="button" onClick={() => setPage(1)} disabled={currentPage <= 1} aria-label="Primera página"><span className="ico ico-chevrons-left" /></button>
+                  <button type="button" onClick={() => setPage(Math.max(1, currentPage - 1))} disabled={currentPage <= 1} aria-label="Página anterior"><span className="ico ico-chevron-left1" /></button>
+                  <span>{currentPage}</span>
+                  <button type="button" onClick={() => setPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage >= totalPages} aria-label="Página siguiente"><span className="ico ico-chevron-right1" /></button>
+                  <button type="button" onClick={() => setPage(totalPages)} disabled={currentPage >= totalPages} aria-label="Última página"><span className="ico ico-chevrons-right" /></button>
                 </div>
                 </div>
               </div>
@@ -708,7 +680,7 @@ function SettingExams() {
           )}
         </section>
       </div>
-      <EditorExam examId={editingExamId} onClose={setEditingExamId} />
+      <EditorExam examId={editingExamId} examlists={selectedGroup?.examlists} onClose={setEditingExamId} onSave={handleSaveEditedExam} />
       <div ref={newGroupModalRef} className="modal setting-exams-prices-modal" tabIndex={-1} aria-labelledby="new-exam-group-title" aria-hidden="true">
         <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
           <form className="modal-content" noValidate onSubmit={handleCreateGroup}>

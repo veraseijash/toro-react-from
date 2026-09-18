@@ -23,7 +23,7 @@ const labels = {
   'indent:+1': 'Aumentar sangría',
 };
 
-export default function WorksheetEditor({ initialValue, onChange }) {
+export default function WorksheetEditor({ initialValue, onChange, compact = false }) {
   const hostRef = useRef(null);
   const onChangeRef = useRef(onChange);
   useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
@@ -34,12 +34,12 @@ export default function WorksheetEditor({ initialValue, onChange }) {
     host.append(container);
     const editor = new Quill(container, {
       theme: 'snow',
-      modules: { toolbar, history: { userOnly: true } },
+      modules: { toolbar: compact ? [toolbar[0], toolbar[1], toolbar[4]] : toolbar, history: { userOnly: true } },
       formats: ['header', 'bold', 'italic', 'underline', 'align', 'list', 'script', 'indent', 'color'],
       placeholder: 'Escribe la hoja de trabajo…',
     });
     editor.root.setAttribute('role', 'textbox');
-    editor.root.setAttribute('aria-label', 'Hoja de trabajo');
+    editor.root.setAttribute('aria-label', compact ? 'Texto del elemento' : 'Hoja de trabajo');
     editor.root.setAttribute('aria-multiline', 'true');
     editor.root.setAttribute('spellcheck', 'true');
     // Clipboard conversion handles existing HTML without injecting it into the page.
@@ -64,7 +64,7 @@ export default function WorksheetEditor({ initialValue, onChange }) {
       editor.off('text-change', handleChange);
       host.replaceChildren();
     };
-  }, [initialValue]);
+  }, [initialValue, compact]);
 
   return <div className="worksheet-editor" ref={hostRef} />;
 }

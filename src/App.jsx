@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import Chats from './pages/Chats';
 import SettingExams from './pages/SettingExams';
+import OrderExams from './pages/OrderExams';
 import ProtectedRoute from './components/ProtectedRoute';
 import PermissionRoute from './components/PermissionRoute';
 import useAuth from './context/useAuth';
@@ -34,6 +35,7 @@ function App() {
             </Route>
             <Route element={<PermissionRoute permission="setting-exams" />}>
               <Route path="/configuracion/examenes" element={<SettingExams />} />
+              <Route path="/configuracion/ordenar" element={<OrderExams />} />
             </Route>
             <Route path="/chats" element={<Chats />} />
           </Route>
