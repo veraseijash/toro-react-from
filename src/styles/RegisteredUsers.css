@@ -1,0 +1,39 @@
+.registered-users-page .setting-exams-table-panel {
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.registered-users-page > .d-flex,
+.registered-users-page > p {
+  flex-shrink: 0;
+}
+
+.registered-users-page .setting-exams-table-scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.registered-users-page .setting-exams-table td {
+  vertical-align: middle;
+}
+
+.registered-users-page .registered-users-hide-button,
+.registered-users-page .registered-users-edit-button {
+  font-size: inherit;
+}
+
+.registered-users-page .setting-exams-table .ico-pencil,
+.registered-users-page .setting-exams-table .ico-trash1 {
+  font-size: 1.5em;
+}
+
+.registered-users-page .setting-exams-table .registered-users-address,
+.registered-users-page .setting-exams-table .registered-users-position {
+  min-width: 140px;
+  max-width: 220px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,13 @@
+﻿.list-germs-page .list-germs-columns {
+  grid-template-columns: minmax(0, 1fr) 300px;
+}
+
+.list-germs-page .setting-exams-group-list li {
+  cursor: default;
+}
+
+.list-germs-page .setting-exams-group-description {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+

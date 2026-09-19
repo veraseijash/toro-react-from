@@ -403,7 +403,7 @@ body {
 }
 
 .sidebar-group.open .sidebar-submenu {
-  max-height: 180px;
+  max-height: none;
   padding: 5px 0 3px;
   opacity: 1;
 }

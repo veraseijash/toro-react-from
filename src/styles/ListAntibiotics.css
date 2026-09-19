@@ -1,0 +1,12 @@
+.list-antibiotics-page .list-antibiotics-columns {
+  grid-template-columns: minmax(0, 1fr) 300px;
+}
+
+.list-antibiotics-page .setting-exams-group-list li {
+  cursor: default;
+}
+
+.list-antibiotics-page .setting-exams-group-description {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

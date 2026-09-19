@@ -41,6 +41,48 @@ export const MENU_ITEMS = [
         permission: 'routines-exams',
         collapseOnClick: true,
       },
+      {
+        to: '/configuracion/antibiotics',
+        label: 'Lista de antibióticos',
+        permission: 'antibiotics-exams',
+        collapseOnClick: true,
+      },
+      {
+        to: '/configuracion/germs',
+        label: 'Lista de gérmenes',
+        permission: 'germs-exams',
+        collapseOnClick: true,
+      },
+      {
+        to: '/configuracion/parasiticforms',
+        label: 'Lista de forma parasitaria',
+        permission: 'parasiticforms-exams',
+        collapseOnClick: true,
+      },
+      {
+        to: '/configuracion/group-worksheet',
+        label: 'Grupos hoja de trabajo',
+        permission: 'group-worksheet',
+        collapseOnClick: true,
+      },
+      {
+        to: '/configuracion/special-tests',
+        label: 'Pruebas especiales',
+        permission: 'special-tests',
+        collapseOnClick: true,
+      },
+      {
+        to: '/configuracion/payment-methods',
+        label: 'Forma de pagos',
+        permission: 'payment-methods',
+        collapseOnClick: true,
+      },
+      {
+        to: '/configuracion/registered-users',
+        label: 'Usuarios registrados',
+        permission: 'registered-users',
+        collapseOnClick: true,
+      },
     ],
   },
 ];

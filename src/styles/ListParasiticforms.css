@@ -1,0 +1,14 @@
+﻿.list-parasiticforms-page .list-parasiticforms-columns {
+  grid-template-columns: minmax(0, 1fr) 300px;
+}
+
+.list-parasiticforms-page .setting-exams-group-list li {
+  cursor: default;
+}
+
+.list-parasiticforms-page .setting-exams-group-description {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+

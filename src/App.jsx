@@ -13,6 +13,13 @@ import Chats from './pages/Chats';
 import SettingExams from './pages/SettingExams';
 import OrderExams from './pages/OrderExams';
 import RoutinesExams from './pages/RoutinesExams';
+import ListAntibiotics from './pages/ListAntibiotics';
+import ListGerms from './pages/ListGerms';
+import ListParasiticforms from './pages/ListParasiticforms';
+import GroupWorksheet from './pages/GroupWorksheet';
+import SpecialTests from './pages/SpecialTests';
+import PaymentMethods from './pages/PaymentMethods';
+import RegisteredUsers from './pages/RegisteredUsers';
 import ProtectedRoute from './components/ProtectedRoute';
 import PermissionRoute from './components/PermissionRoute';
 import useAuth from './context/useAuth';
@@ -41,6 +48,27 @@ function App() {
             <Route path="/chats" element={<Chats />} />
             <Route element={<PermissionRoute permission="routines-exams" />}>
               <Route path="/configuracion/routines" element={<RoutinesExams />} />
+            </Route>
+            <Route element={<PermissionRoute permission="antibiotics-exams" />}>
+              <Route path="/configuracion/antibiotics" element={<ListAntibiotics />} />
+            </Route>
+            <Route element={<PermissionRoute permission="germs-exams" />}>
+              <Route path="/configuracion/germs" element={<ListGerms />} />
+            </Route>
+            <Route element={<PermissionRoute permission="parasiticforms-exams" />}>
+              <Route path="/configuracion/parasiticforms" element={<ListParasiticforms />} />
+            </Route>
+            <Route element={<PermissionRoute permission="special-tests" />}>
+              <Route path="/configuracion/special-tests" element={<SpecialTests />} />
+            </Route>
+            <Route element={<PermissionRoute permission="payment-methods" />}>
+              <Route path="/configuracion/payment-methods" element={<PaymentMethods />} />
+            </Route>
+            <Route element={<PermissionRoute permission="registered-users" />}>
+              <Route path="/configuracion/registered-users" element={<RegisteredUsers />} />
+            </Route>
+            <Route element={<PermissionRoute permission="group-worksheet" />}>
+              <Route path="/configuracion/group-worksheet" element={<GroupWorksheet />} />
             </Route>
           </Route>
 
