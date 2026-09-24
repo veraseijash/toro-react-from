@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import Chats from './pages/Chats';
 import SettingExams from './pages/SettingExams';
+import SettingLaboratory from './pages/SettingLaboratory';
 import OrderExams from './pages/OrderExams';
 import RoutinesExams from './pages/RoutinesExams';
 import ListAntibiotics from './pages/ListAntibiotics';
@@ -69,6 +70,9 @@ function App() {
             </Route>
             <Route element={<PermissionRoute permission="group-worksheet" />}>
               <Route path="/configuracion/group-worksheet" element={<GroupWorksheet />} />
+            </Route>
+            <Route element={<PermissionRoute permission="laboratory" />}>
+              <Route path="/configuracion/laboratory" element={<SettingLaboratory />} />
             </Route>
           </Route>
 

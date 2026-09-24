@@ -1,0 +1,84 @@
+.edit-user-modal .edit-user-error {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--text-danger);
+  font-size: 0.8rem;
+}
+
+.edit-user-modal button[data-edit-user-control] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.edit-user-modal .modal-header {
+  justify-content: flex-start;
+  padding-inline: 1.25rem;
+}
+
+.edit-user-modal .modal-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.edit-user-modal .modal-body {
+  overflow-y: auto;
+}
+
+.edit-user-image {
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.edit-user-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.edit-user-signature {
+  height: 100px;
+}
+
+.edit-user-signature img {
+  object-fit: contain;
+}
+
+.edit-user-roles {
+  position: relative;
+}
+
+.edit-user-roles summary {
+  list-style: none;
+  cursor: pointer;
+  min-height: 38px;
+}
+
+.edit-user-roles summary::-webkit-details-marker {
+  display: none;
+}
+
+.edit-user-role-options {
+  position: absolute;
+  z-index: 2;
+  width: 100%;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.edit-user-role-options .form-check {
+  margin-block: 0.5rem;
+}

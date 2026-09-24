@@ -83,6 +83,12 @@ export const MENU_ITEMS = [
         permission: 'registered-users',
         collapseOnClick: true,
       },
+      {
+        to: '/configuracion/laboratory',
+        label: 'Laboratorio',
+        permission: 'laboratory',
+        collapseOnClick: true,
+      },
     ],
   },
 ];

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Tooltip } from 'bootstrap';
-import { getUsersOrder, updateUser } from '../services/userService';
+import useAuth from '../context/useAuth';
+import EditUser from '../components/setting/EditUser';
+import { getUsersOrder, updateUser, uploadUserFile } from '../services/userService';
 import '../styles/RegisteredUsers.css';
 
 function VisibilityUserButton({ user, disabled, onClick }) {
@@ -27,7 +29,7 @@ function VisibilityUserButton({ user, disabled, onClick }) {
   );
 }
 
-function EditUserButton({ user }) {
+function EditUserButton({ user, onClick }) {
   const buttonRef = useRef(null);
 
   useEffect(() => {
@@ -37,7 +39,11 @@ function EditUserButton({ user }) {
 
   return (
     <button ref={buttonRef} type="button" className="setting-exams-action registered-users-edit-button"
-      aria-label={`Editar ${user.name ?? user.user_name ?? 'usuario'}`}>
+      aria-label={`Editar ${user.name ?? user.user_name ?? 'usuario'}`}
+      onClick={() => {
+        Tooltip.getInstance(buttonRef.current)?.hide();
+        onClick(buttonRef.current);
+      }}>
       <span className="ico ico-pencil text-primary" aria-hidden="true" />
     </button>
   );
@@ -59,15 +65,58 @@ const readRoles = (value) => {
 };
 
 export default function RegisteredUsers() {
+  const { session } = useAuth();
+  const canManageUser = (user) => Number(user.id) !== 1 || Number(session?.user?.id) === 1;
   const [users, setUsers] = useState([]);
+  const [editingUser, setEditingUser] = useState(null);
+  const editTriggerRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [hidingId, setHidingId] = useState(null);
   const [updateError, setUpdateError] = useState('');
   const hidingRef = useRef(false);
 
+  const saveUser = async (id, changes, images) => {
+    if (!editingUser || String(editingUser.id) !== String(id) || !canManageUser(editingUser)) {
+      throw new Error('No se puede editar este usuario.');
+    }
+    const payload = { ...changes };
+    for (const [changed, file, field] of [
+      [images.photoChanged, images.photoFile, 'url_photo'],
+      [images.signatureChanged, images.signatureFile, 'url_signature'],
+    ]) {
+      if (!changed) continue;
+      if (!file) throw new Error('No se encontró la imagen seleccionada.');
+      const uploaded = await uploadUserFile(file);
+      if (uploaded?.success === false || uploaded?.ok === false || uploaded?.error) {
+        throw new Error('No se pudo subir la imagen.');
+      }
+      const filename = typeof uploaded === 'string' ? uploaded
+        : uploaded?.filename ?? uploaded?.fileName ?? uploaded?.name
+          ?? (typeof uploaded?.data === 'string' ? uploaded.data : uploaded?.data?.filename);
+      if (typeof filename !== 'string' || !filename.trim()) {
+        throw new Error('El servidor no devolvió el nombre de la imagen.');
+      }
+      payload[field] = filename;
+    }
+    if (!Object.keys(payload).length) return;
+    const response = await updateUser(id, payload);
+    if (response?.success === false || response?.ok === false || response?.error) {
+      throw new Error('No se pudo actualizar el usuario.');
+    }
+    // Las claves solo se envían al servidor; no se guardan en el estado de la tabla.
+    if (!response || String(response.id) !== String(id)) {
+      throw new Error('El servidor no confirmó el usuario actualizado.');
+    }
+    const publicChanges = Object.fromEntries(Object.entries(response)
+      .filter(([name]) => name !== 'password' && name !== 'passwordSignature'));
+    setUsers((current) => current.map((item) => (
+      String(item.id) === String(id) ? { ...item, ...publicChanges } : item
+    )));
+  };
+
   const hideUser = async (user) => {
-    if (hidingRef.current || user.id == null) return;
+    if (!canManageUser(user) || hidingRef.current || user.id == null) return;
     hidingRef.current = true;
     setHidingId(user.id);
     setUpdateError('');
@@ -143,9 +192,11 @@ export default function RegisteredUsers() {
                 {users.map((user) => (
                   <tr key={user.id}>
                     <td className="setting-exams-center">
-                      <VisibilityUserButton user={user}
-                        disabled={hidingId != null || user.id == null}
-                        onClick={() => hideUser(user)} />
+                      {canManageUser(user) && (
+                        <VisibilityUserButton user={user}
+                          disabled={hidingId != null || user.id == null}
+                          onClick={() => hideUser(user)} />
+                      )}
                     </td>
                     <td>{user.name ?? ''}</td>
                     <td>{user.user_name ?? ''}</td>
@@ -164,7 +215,10 @@ export default function RegisteredUsers() {
                       </div>
                     </td>
                     <td className="setting-exams-center">
-                      <EditUserButton user={user} />
+                      {canManageUser(user) && <EditUserButton user={user} onClick={(trigger) => {
+                        editTriggerRef.current = trigger;
+                        setEditingUser(user);
+                      }} />}
                     </td>
                   </tr>
                 ))}
@@ -173,6 +227,14 @@ export default function RegisteredUsers() {
           </div>
         </div>
       </div>
+      {editingUser && <EditUser
+        user={editingUser}
+        onSave={saveUser}
+        onClose={() => {
+          setEditingUser(null);
+          editTriggerRef.current?.focus();
+        }}
+      />}
     </div>
   );
 }
