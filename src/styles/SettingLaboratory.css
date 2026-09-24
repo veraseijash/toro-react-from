@@ -1,0 +1,83 @@
+.setting-laboratory-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 3rem);
+  min-height: 0;
+}
+
+.setting-laboratory-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.setting-laboratory-template {
+  display: block;
+  width: 100%;
+  height: 320px;
+  border: 0;
+  background: #fff;
+}
+
+.setting-laboratory-taxes {
+  --bs-table-bg: transparent;
+}
+
+.setting-laboratory-taxes th {
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.setting-laboratory-taxes td:first-child {
+  min-width: 180px;
+}
+
+.setting-laboratory-taxes td:nth-child(2) {
+  min-width: 140px;
+}
+
+.setting-laboratory-logo {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.setting-laboratory-logo-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  min-height: 200px;
+  flex-shrink: 0;
+}
+
+.setting-laboratory-logo-preview img {
+  display: block;
+  object-fit: contain;
+}
+
+.setting-laboratory-logo-controls {
+  width: 500px;
+  max-width: 100%;
+  min-width: 0;
+  padding-top: 0.5rem;
+}
+
+.setting-laboratory-logo-range {
+  display: grid;
+  grid-template-columns: 85px minmax(0, 1fr) 3ch;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 767.98px) {
+  .setting-laboratory-logo {
+    flex-direction: column;
+  }
+
+  .setting-laboratory-page {
+    height: calc(100dvh - 3rem - 64px);
+  }
+}

@@ -2949,7 +2949,8 @@ body {
   overflow: hidden;
 }
 
-.editor-exam-modal .nav-tabs {
+.editor-exam-modal .nav-tabs,
+.setting-laboratory-page .nav-tabs {
   flex-shrink: 0;
   --bs-nav-link-color: #f3f1ed;
   --bs-nav-link-hover-color: #f3f1ed;
@@ -2959,22 +2960,26 @@ body {
   border-bottom: 0;
 }
 
-.editor-exam-modal .nav-tabs .nav-link {
+.editor-exam-modal .nav-tabs .nav-link,
+.setting-laboratory-page .nav-tabs .nav-link {
   margin-bottom: 0;
   border-bottom-color: #fff;
 }
 
-.editor-exam-modal .nav-tabs .nav-link.active {
+.editor-exam-modal .nav-tabs .nav-link.active,
+.setting-laboratory-page .nav-tabs .nav-link.active {
   border-bottom-color: transparent;
 }
 
-.editor-exam-modal .nav-tabs::after {
+.editor-exam-modal .nav-tabs::after,
+.setting-laboratory-page .nav-tabs::after {
   content: '';
   flex: 1;
   border-bottom: 1px solid #fff;
 }
 
-.editor-exam-modal .tab-content {
+.editor-exam-modal .tab-content,
+.setting-laboratory-page .tab-content {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
