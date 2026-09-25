@@ -19,6 +19,19 @@ export const MENU_ITEMS = [
     ],
   },
   {
+    id: 'flow',
+    label: 'Movimientos',
+    icon: 'ico-file-text-o',
+    children: [
+      {
+        to: '/flow/cash',
+        label: 'Cierre de caja',
+        permission: 'flow-cash',
+        collapseOnClick: true,
+      },
+    ]
+  },
+  {
     id: 'setting',
     label: 'Configuración',
     icon: 'ico-equalizer',

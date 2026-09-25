@@ -188,8 +188,12 @@ body {
   min-height: 100vh;
 }
 
-.ico-sm {
-  font-size: 120%;
+.ico-lg {
+  font-size: 150%;
+}
+
+.ico-2x {
+  font-size: 200%;
 }
 
 .app-shell {

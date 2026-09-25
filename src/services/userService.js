@@ -30,6 +30,11 @@ export const getUserById = async (id) => {
   return response.data;
 };
 
+export const getUsersWithPatientsByDate = async (date) => {
+  const response = await api.get(`/users/patients/${date}/`);
+  return response.data;
+}
+
 export const updateUser = async (id, changes) => {
   const assertSuccess = (data) => {
     if (data?.success === false || data?.ok === false || data?.error

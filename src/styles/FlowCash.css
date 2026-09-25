@@ -1,0 +1,50 @@
+.flow-cash-totals {
+  --bs-table-bg: transparent;
+  --bs-table-color: inherit;
+}
+
+.flow-cash-totals td:not(:first-child) {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.flow-cash-deposits {
+  display: grid;
+  gap: 24px;
+  width: 100%;
+  max-width: 640px;
+}
+
+.card.flow-cash-deposit {
+  overflow: visible;
+}
+
+.flow-cash-deposit-actions {
+  position: absolute;
+  top: -12px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+}
+
+.flow-cash-circle,
+.btn.flow-cash-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  flex: 0 0 24px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.flow-cash-deposit-number {
+  background: var(--text-warning);
+  color: #212529;
+  font-weight: 700;
+}

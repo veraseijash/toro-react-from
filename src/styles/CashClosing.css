@@ -1,0 +1,83 @@
+.cash-closing-columns {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 24px;
+}
+
+.cash-closing-detail {
+  min-width: 0;
+}
+
+.cash-closing-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.cash-closing-refresh:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+.cash-closing-users {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.cash-closing-user {
+  position: relative;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 38px 12px 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cash-closing-star {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: var(--text-warning);
+}
+
+.cash-closing-user:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+.cash-closing-avatar {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  background: rgba(127, 127, 127, 0.2);
+}
+
+.cash-closing-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cash-closing-user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cash-closing-user-info small {
+  font-size: 0.8rem;
+}

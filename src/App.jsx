@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Content from './pages/Content';
 import About from './pages/About';
 import History from './pages/History';
+import CashClosing from './pages/CashClosing';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import Chats from './pages/Chats';
@@ -39,6 +40,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/content" element={<Content />} />
             <Route path="/nosotros" element={<About />} />
+            <Route element={<PermissionRoute permission="flow-cash" />}>
+              <Route path="/flow/cash" element={<CashClosing />} />
+            </Route>
             <Route element={<PermissionRoute permission="history" />}>
               <Route path="/historia" element={<History />} />
             </Route>

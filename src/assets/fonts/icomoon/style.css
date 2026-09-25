@@ -693,10 +693,10 @@
 .ico-sliders1:before {
   content: "\ecaf";
 }
-.ico-smartphone:before {
+.ico-lgartphone:before {
   content: "\ecb0";
 }
-.ico-smile1:before {
+.ico-lgile1:before {
   content: "\ecb1";
 }
 .ico-speaker:before {
@@ -1719,7 +1719,7 @@
 .ico-folder-open-o:before {
   content: "\f115";
 }
-.ico-smile-o:before {
+.ico-lgile-o:before {
   content: "\f118";
 }
 .ico-frown-o:before {
@@ -4446,10 +4446,10 @@
 .ico-happy2:before {
   content: "\ea8c";
 }
-.ico-smile:before {
+.ico-lgile:before {
   content: "\ea8d";
 }
-.ico-smile2:before {
+.ico-lgile2:before {
   content: "\ea8e";
 }
 .ico-tongue:before {

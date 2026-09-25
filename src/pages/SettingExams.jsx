@@ -628,9 +628,9 @@ function SettingExams() {
                           <td>{exam.abbreviation ?? exam.abbreviature ?? ''}</td>
                           <td className="setting-exams-center">
                             {Number(exam.special_test ?? exam.specialTest ?? 0) === 0 ? (
-                              <span className="ico ico-close text-warning ico-sm" aria-label="No es prueba especial" />
+                              <span className="ico ico-close text-warning ico-lg" aria-label="No es prueba especial" />
                             ) : (
-                              <span className="ico ico-check-star text-primary ico-sm" aria-label="Es prueba especial" />
+                              <span className="ico ico-check-star text-primary ico-lg" aria-label="Es prueba especial" />
                             )}
                           </td>
                           {[1, 2, 3, 4, 5, 6].map((number) => (
