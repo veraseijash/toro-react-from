@@ -8,6 +8,7 @@ import Content from './pages/Content';
 import About from './pages/About';
 import History from './pages/History';
 import CashClosing from './pages/CashClosing';
+import FluirConsultation from './pages/FluirConsultation';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 import Chats from './pages/Chats';
@@ -42,6 +43,9 @@ function App() {
             <Route path="/nosotros" element={<About />} />
             <Route element={<PermissionRoute permission="flow-cash" />}>
               <Route path="/flow/cash" element={<CashClosing />} />
+            </Route>
+            <Route element={<PermissionRoute permission="flow-consultation" />}>
+              <Route path="/flow/consultation" element={<FluirConsultation />} />
             </Route>
             <Route element={<PermissionRoute permission="history" />}>
               <Route path="/historia" element={<History />} />

@@ -19,11 +19,6 @@ export const getTypepayments = async () => {
   return response.data;
 }
 
-export const getDollarvalue = async () => {
-  const response = await api.get('/dollarvalue/get/');
-  return response.data;
-}
-
 export const updateCash_register = async (id, changes) => {
   const response = await api.patch(`/cash_register/${id}/`, changes);
   return response.data; 

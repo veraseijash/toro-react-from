@@ -16,6 +16,7 @@ function CashClosing() {
   const [error, setError] = useState('');
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [printReady, setPrintReady] = useState(false);
   const [clearing, setClearing] = useState(false);
   const clearingRef = useRef(false);
   const [clearError, setClearError] = useState('');
@@ -106,7 +107,12 @@ function CashClosing() {
               {clearing ? 'Limpiando...' : 'Limpiar cierre de caja'}
             </button>
           )}
-          <button type="button" className="btn btn-secondary">Imprimir</button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            disabled={!selectedUser || !printReady || loading || busy}
+            onClick={() => window.print()}
+          >Imprimir</button>
         </div>
       </div>
       {notice && <p role="status">{notice}</p>}
@@ -178,6 +184,7 @@ function CashClosing() {
               user={selectedUser}
               date={selectedDate}
               saving={busy}
+              onPrintReadyChange={setPrintReady}
               onSavingChange={setSaving}
               onSaved={() => {
                 setNotice('Cierre de caja registrado correctamente.');

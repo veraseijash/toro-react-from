@@ -20,6 +20,11 @@ export const getLaboratory = async (id) => {
   return response.data;
 };
 
+export const getVisibleUsers = async () => {
+  const response = await api.get(`/users/visible`);
+  return response.data;
+}
+
 export const getVisibleUsersWithUnreadMessageCount = async (userId) => {
   const response = await api.get(`/users/visible-with-unread-messages/${userId}/`);
   return response.data;

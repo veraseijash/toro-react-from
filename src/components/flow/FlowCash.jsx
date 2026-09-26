@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { createCash_register, updateCash_register, getDollarvalue, getInvoiceTotales, getTypepayments } from '../../services/wayPayService';
+import { createPortal } from 'react-dom';
+import CashClosingPrint from './CashClosingPrint';
+import { createCash_register, updateCash_register, getInvoiceTotales, getTypepayments } from '../../services/wayPayService';
 import '../../styles/FlowCash.css';
 
 const formatAmount = (value) => new Intl.NumberFormat('es-VE', {
@@ -8,9 +10,8 @@ const formatAmount = (value) => new Intl.NumberFormat('es-VE', {
 }).format(Number(value) || 0);
 
 const newDeposit = (localId) => ({ localId, bank: '', number: '', amount: '0', cash: '0' });
-const usesDollars = (payment) => Number(payment.only_dollars) === 1;
 
-export default function FlowCash({ user, date, saving, onSavingChange, onSaved }) {
+export default function FlowCash({ user, date, saving, onSavingChange, onSaved, onPrintReadyChange }) {
   const savingRef = useRef(false);
   const [saveError, setSaveError] = useState('');
   const register = Array.isArray(user.cash_register)
@@ -30,6 +31,11 @@ export default function FlowCash({ user, date, saving, onSavingChange, onSaved }
   const [nextId, setNextId] = useState(deposits.length);
 
   useEffect(() => {
+    onPrintReadyChange?.(!loading && !error);
+    return () => onPrintReadyChange?.(false);
+  }, [loading, error, onPrintReadyChange]);
+
+  useEffect(() => {
     if (hasRegister) return;
     let active = true;
     setLoading(true);
@@ -41,42 +47,18 @@ export default function FlowCash({ user, date, saving, onSavingChange, onSaved }
         const payments = await getTypepayments();
         if (!active) return;
         if (!Array.isArray(payments)) throw new Error('Respuesta de tipos de pago no válida');
-        let dollarValue = 1;
-        if (payments.some(usesDollars)) {
-          const dollar = await getDollarvalue();
-          if (!active) return;
-          dollarValue = Number(dollar?.value);
-          if (!Number.isFinite(dollarValue) || dollarValue <= 0) {
-            throw new Error('Valor del dólar no válido');
-          }
-        }
         const rows = await Promise.all(payments.map(async (payment, index) => {
           const result = await getInvoiceTotales(date, userId, payment.id);
           if (result?.total_not_annulled == null || result?.total_annulled == null) {
             throw new Error('Respuesta de totales no válida');
           }
-          const amounts = { ...result };
-          if (usesDollars(payment)) {
-            for (const field of [
-              'total_not_annulled',
-              'total_annulled',
-              'total_dollars_not_annulled',
-              'total_dollars_annulled',
-            ]) {
-              const amount = Number(result[field]);
-              if (result[field] == null || !Number.isFinite(amount)) {
-                throw new Error('Importe de totales no válido');
-              }
-              amounts[field] = Number((amount / dollarValue).toFixed(2));
-            }
-          }
           return {
-            ...amounts,
+            ...result,
             id: index,
             id_type_payment: payment.id,
             text: payment.description,
-            ingress: amounts.total_not_annulled,
-            egress: amounts.total_annulled,
+            ingress: result.total_not_annulled,
+            egress: result.total_annulled,
           };
         }));
         if (active) setCalculatedTotals(rows);
@@ -156,6 +138,16 @@ export default function FlowCash({ user, date, saving, onSavingChange, onSaved }
   };
 
   return (
+    <>
+    {!loading && !error && createPortal(
+      <CashClosingPrint
+        date={register?.admission_date || date}
+        cashier={user.name}
+        totals={totals}
+        deposits={deposits}
+      />,
+      document.body,
+    )}
     <form id="flow-cash-form" className="flow-cash" onSubmit={handleSubmit}>
       <fieldset disabled={saving}>
       {saveError && <p role="alert">{saveError}</p>}
@@ -266,5 +258,6 @@ export default function FlowCash({ user, date, saving, onSavingChange, onSaved }
       </div>
       </fieldset>
     </form>
+    </>
   );
 }

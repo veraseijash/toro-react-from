@@ -29,6 +29,12 @@ export const MENU_ITEMS = [
         permission: 'flow-cash',
         collapseOnClick: true,
       },
+      {
+        to: '/flow/consultation',
+        label: 'Consulta de movimientos',
+        permission: 'flow-consultation',
+        collapseOnClick: true,
+      },
     ]
   },
   {

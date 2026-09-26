@@ -1,0 +1,113 @@
+.cash-closing-print {
+  display: none;
+}
+
+@media print {
+  @page cash-closing {
+    size: Letter portrait;
+    margin: 11mm 20mm;
+  }
+
+  body:has(> .cash-closing-print) > :not(.cash-closing-print) {
+    display: none !important;
+  }
+
+  body:has(> .cash-closing-print) {
+    display: block !important;
+    background: #fff !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .cash-closing-print,
+  .cash-closing-print * {
+    visibility: visible;
+    color: #000;
+  }
+
+  .cash-closing-print {
+    page: cash-closing;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding-block: 10mm;
+    font: 9pt Arial, sans-serif;
+    background: #fff;
+  }
+
+  .cash-closing-print h1,
+  .cash-closing-print h2 {
+    font: inherit;
+  }
+
+  .cash-closing-print h1 {
+    text-align: center;
+    margin: 0 0 1mm;
+  }
+
+  .cash-closing-print > p {
+    margin: 0 0 3mm;
+  }
+
+  .cash-closing-print table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7.5pt;
+  }
+
+  .cash-closing-print th,
+  .cash-closing-print td {
+    padding: 1.5mm 3mm;
+    text-align: right;
+    border-bottom: 0.2mm solid #ddd;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cash-closing-print th:first-child,
+  .cash-closing-print td:first-child {
+    text-align: left;
+    width: 45%;
+  }
+
+  .cash-closing-print tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .cash-closing-print tr,
+  .cash-closing-print-deposit {
+    break-inside: avoid;
+  }
+
+  .cash-closing-print h2 {
+    margin: 4mm 0;
+    break-after: avoid;
+  }
+
+  .cash-closing-print-deposit {
+    position: relative;
+    width: 80%;
+    box-sizing: border-box;
+    border: 0.2mm solid #ddd;
+    border-radius: 0.5mm;
+    padding: 3mm;
+    margin-bottom: 5mm;
+    font-size: 7.5pt;
+    overflow-wrap: anywhere;
+  }
+
+  .cash-closing-print-deposit p {
+    margin: 0 0 3mm;
+  }
+
+  .cash-closing-print-deposit p:last-child {
+    margin-bottom: 0;
+  }
+
+  .cash-closing-print-number {
+    position: absolute;
+    top: -2mm;
+    right: 1mm;
+    padding: 0 1mm;
+    background: #fff;
+  }
+}
