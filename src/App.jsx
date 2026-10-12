@@ -6,6 +6,7 @@ import MainLayout from './layouts/MainLayout';
 import Home from './pages/Home';
 import Content from './pages/Content';
 import About from './pages/About';
+import Admission from './pages/Admission';
 import History from './pages/History';
 import CashClosing from './pages/CashClosing';
 import FluirConsultation from './pages/FluirConsultation';
@@ -41,6 +42,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/content" element={<Content />} />
             <Route path="/nosotros" element={<About />} />
+            <Route element={<PermissionRoute permission="routine-admission" />}>
+              <Route path="/routine/admission" element={<Admission />} />
+            </Route>
             <Route element={<PermissionRoute permission="flow-cash" />}>
               <Route path="/flow/cash" element={<CashClosing />} />
             </Route>

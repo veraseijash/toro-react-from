@@ -1,0 +1,244 @@
+.admission-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 3rem);
+  min-height: 0;
+}
+
+.admission-page h1 {
+  flex-shrink: 0;
+}
+
+.admission-page .nav-pills {
+  flex-shrink: 0;
+  --bs-nav-link-color: #f3f1ed;
+  --bs-nav-link-hover-color: #f3f1ed;
+  --bs-nav-pills-link-active-color: #f3f1ed;
+  --bs-nav-pills-link-active-bg: transparent;
+}
+
+.admission-page .nav-pills .nav-link {
+  border: 1px solid transparent;
+  border-bottom-color: #fff;
+  border-radius: 0.375rem 0.375rem 0 0;
+}
+
+.admission-page .nav-pills .nav-link.active {
+  border-color: #fff #fff transparent;
+}
+
+.admission-page .nav-pills::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #fff;
+}
+
+.admission-page .tab-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border: 1px solid #fff;
+  border-top: 0;
+  padding: 1rem;
+}
+
+.admission-page .tab-pane {
+  min-height: 100%;
+}
+
+.admission-exams-columns {
+  display: grid;
+  grid-template-columns: 384px minmax(0, 1fr);
+  gap: 1.5rem;
+  height: 100%;
+  min-height: 0;
+}
+
+.admission-page .admission-exams-panel {
+  height: 100%;
+  min-height: 0;
+}
+
+.admission-exams-columns > section:first-child {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.admission-exams-toolbar {
+  flex-shrink: 0;
+}
+
+.admission-exams-card {
+  flex: 1;
+  min-height: 0;
+  margin-top: 1rem;
+  overflow-y: auto;
+}
+
+.admission-exams-columns > section {
+  min-width: 0;
+}
+
+.admission-exams-selected {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  min-height: 0;
+}
+
+.admission-exams-selected-content {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.admission-selected-table {
+  --bs-table-bg: transparent;
+}
+
+.admission-selected-table thead th {
+  color: #fff;
+}
+
+.admission-selected-table th,
+.admission-selected-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.admission-selected-table th:nth-child(3),
+.admission-selected-table td:nth-child(3) {
+  text-align: left;
+}
+
+.admission-selected-table th:nth-last-child(-n + 3),
+.admission-selected-table td:nth-last-child(-n + 3) {
+  text-align: right;
+}
+
+.admission-selected-table td:first-child .ico-trash-o {
+  color: var(--text-warning, var(--bs-warning));
+}
+
+.admission-exams-totals .card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.admission-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admission-total-row > span:last-child {
+  flex-shrink: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.admission-discount-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admission-discount-field .form-control {
+  width: 7.5rem;
+}
+
+.admission-exams-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admission-exams-toolbar .btn-group {
+  flex-shrink: 0;
+}
+
+.admission-exams-toolbar > .form-select,
+.admission-exams-toolbar > .form-control {
+  flex: 1;
+  min-width: 0;
+  width: 0;
+}
+
+@media (max-width: 575.98px) {
+  .admission-exams-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.admission-patient-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.admission-patient-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.admission-counter {
+  display: block;
+  text-align: right;
+  color: var(--bs-gray-500);
+  margin-top: 0.25rem;
+}
+
+.admission-document-type {
+  flex: 0 0 5rem !important;
+}
+
+.admission-demographics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.admission-samples {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.admission-phone {
+  width: calc((100% - 3rem) / 3);
+}
+
+.admission-age-group .dropdown-menu {
+  top: 100%;
+  right: 0;
+  left: auto;
+  margin-top: 0.25rem;
+}
+
+.admission-age-group > .dropdown-toggle {
+  border-top-right-radius: var(--bs-border-radius);
+  border-bottom-right-radius: var(--bs-border-radius);
+}
+
+@media (max-width: 1199.98px) {
+  .admission-demographics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767.98px) {
+  .admission-patient-grid,
+  .admission-demographics,
+  .admission-samples {
+    grid-template-columns: 1fr;
+  }
+
+  .admission-phone {
+    width: 100%;
+  }
+}

@@ -20,7 +20,7 @@ function GroupCard({ group }) {
   return (
     <article className={`card group-card${cardVariant}`}>
       <div className="card-body">
-        <div className="group-card-heading">
+        <div className="group-card-heading" style={{ minHeight: '98px' }}>
           <span className="group-card-label">Área de trabajo</span>
           <strong>{group.description}</strong>
           <span>{group.details || '\u00a0'}</span>

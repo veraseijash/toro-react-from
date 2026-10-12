@@ -3,6 +3,19 @@ export const IMAGES_BASE_URL = 'http://localhost:3000/images';
 export const MENU_ITEMS = [
   { to: '/', label: 'Inicio', icon: 'ico-home6', permission: '', end: true },
   {
+    id: 'routine',
+    label: 'Rutina diaria',
+    icon: 'ico-users3',
+    children: [
+      {
+        to: '/routine/admission',
+        label: 'Admisión de paciente',
+        permission: 'routine-admission',
+        collapseOnClick: true,
+      },
+    ],
+  },
+  {
     to: '/historia',
     label: 'Historia',
     icon: 'ico-clipboard-clock',

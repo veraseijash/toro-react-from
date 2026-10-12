@@ -24,6 +24,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ico-circle-r:before {
+  content: "\ecf7";
+}
+.ico-ia:before {
+  content: "\ecf6";
+}
 .ico-jeringa:before {
   content: "\ecf0";
 }
@@ -693,10 +699,10 @@
 .ico-sliders1:before {
   content: "\ecaf";
 }
-.ico-lgartphone:before {
+.ico-smartphone:before {
   content: "\ecb0";
 }
-.ico-lgile1:before {
+.ico-smile1:before {
   content: "\ecb1";
 }
 .ico-speaker:before {
@@ -1719,7 +1725,7 @@
 .ico-folder-open-o:before {
   content: "\f115";
 }
-.ico-lgile-o:before {
+.ico-smile-o:before {
   content: "\f118";
 }
 .ico-frown-o:before {
@@ -4446,10 +4452,10 @@
 .ico-happy2:before {
   content: "\ea8c";
 }
-.ico-lgile:before {
+.ico-smile:before {
   content: "\ea8d";
 }
-.ico-lgile2:before {
+.ico-smile2:before {
   content: "\ea8e";
 }
 .ico-tongue:before {
