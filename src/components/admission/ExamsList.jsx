@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
-import { getExamgroups, getExamByGroup, getExamListByDescription, getRoutinesList, getTaxs } from '../../services/admissionService';
+import { useEffect, useRef, useState } from 'react';
+import { getExamgroups, getExamByGroup, getExamListByDescription, getRoutinesList } from '../../services/admissionService';
+import { getExamList } from '../../services/examsService';
 import numericFormat from '../../utils/numericFormat';
+import AdmissionTotals from './AdmissionTotals';
 
 const MODES = [
   { id: 'groups', icon: 'ico-group-exams', label: 'Grupos de exámenes' },
@@ -8,7 +10,7 @@ const MODES = [
   { id: 'search', icon: 'ico-search1', label: 'Buscar exámenes' },
 ];
 
-function ExamsList({ onExamSelect, onRoutineSelect, tariff = '1', onTariffChange }) {
+function ExamsList({ onExamSelect, onRoutineSelect, tariff = '1', onTariffChange, totals }) {
   const [mode, setMode] = useState('groups');
   const [groups, setGroups] = useState([]);
   const [groupId, setGroupId] = useState('');
@@ -22,28 +24,50 @@ function ExamsList({ onExamSelect, onRoutineSelect, tariff = '1', onTariffChange
   const [routines, setRoutines] = useState([]);
   const [selectedRoutine, setSelectedRoutine] = useState(null);
   const items = mode === 'routines' ? routines : exams;
-  const [taxes, setTaxes] = useState([]);
-  const [taxError, setTaxError] = useState('');
-  const [loadingTaxes, setLoadingTaxes] = useState(true);
-  const [discount, setDiscount] = useState('0');
+  const { selectedRows, setSelectedExams } = totals;
+  const [loadingRoutine, setLoadingRoutine] = useState(false);
+  const [routineError, setRoutineError] = useState('');
+  const addingRoutineRef = useRef(false);
 
-  useEffect(() => {
-    let active = true;
-    const loadTaxes = async () => {
-      try {
-        const response = await getTaxs();
-        const rows = Array.isArray(response) ? response : response?.taxs ?? response?.taxes ?? response?.data;
-        if (response?.success === false || response?.error || !Array.isArray(rows)) throw new Error('Respuesta inválida');
-        if (active) setTaxes(rows.filter((tax) => Number(tax.hide) === 0));
-      } catch {
-        if (active) setTaxError('No se pudieron cargar los impuestos.');
-      } finally {
-        if (active) setLoadingTaxes(false);
-      }
-    };
-    loadTaxes();
-    return () => { active = false; };
-  }, []);
+  const addExams = (examsToAdd) => {
+    setSelectedExams((current) => examsToAdd.reduce((rows, exam) => {
+      const exists = rows.some((row) => String(row.exam.id) === String(exam.id));
+      return exists
+        ? rows.map((row) => String(row.exam.id) === String(exam.id) ? { ...row, quantity: row.quantity + 1 } : row)
+        : [...rows, { exam, quantity: 1 }];
+    }, current));
+  };
+
+  const addRoutine = async (routine) => {
+    if (addingRoutineRef.current) return;
+    addingRoutineRef.current = true;
+    setLoadingRoutine(true);
+    setRoutineError('');
+    setSelectedRoutine(routine);
+    try {
+      const registered = typeof routine.registered_exams === 'string'
+        ? JSON.parse(routine.registered_exams) : routine.registered_exams ?? [];
+      if (!Array.isArray(registered)) throw new Error('Rutina inválida');
+      const ids = [...new Set(registered.map((exam) => String(exam.examId ?? exam.id)))];
+      const routineExams = await Promise.all(ids.map(async (id) => {
+        const response = await getExamList(id);
+        const data = response?.examlist ?? response?.exam ?? response?.examlists ?? response?.data ?? response;
+        const exam = Array.isArray(data) ? data.find((item) => String(item.id) === id) : data;
+        if (response?.success === false || response?.error || exam?.id == null || String(exam.id) !== id) {
+          throw new Error('Examen inválido');
+        }
+        return exam;
+      }));
+      addExams(routineExams);
+      onRoutineSelect?.(routine);
+    } catch {
+      setRoutineError('No se pudieron agregar los exámenes de la rutina. Vuelve a intentarlo.');
+    } finally {
+      addingRoutineRef.current = false;
+      setLoadingRoutine(false);
+    }
+  };
+
 
   useEffect(() => {
     setExams([]);
@@ -130,6 +154,8 @@ function ExamsList({ onExamSelect, onRoutineSelect, tariff = '1', onTariffChange
           {mode === 'search' && <input className="form-control" type="search" aria-label="Buscar exámenes" placeholder="Buscar..." value={query} onChange={(event) => setQuery(event.target.value)} />}
         </div>
         {mode === 'groups' && error && <p className="text-danger mt-2" role="alert">{error}</p>}
+        {loadingRoutine && <p className="mt-2" role="status">Agregando exámenes de la rutina...</p>}
+        {routineError && <p className="text-danger mt-2" role="alert">{routineError}</p>}
         {((mode === 'groups' && groupId) || mode === 'search' || mode === 'routines') && (
           <div className="card admission-exams-card" aria-busy={loadingExams}>
             {loadingExams && <p className="p-3 mb-0" role="status">{mode === 'routines' ? 'Cargando rutinas...' : 'Cargando exámenes...'}</p>}
@@ -140,12 +166,13 @@ function ExamsList({ onExamSelect, onRoutineSelect, tariff = '1', onTariffChange
                 {items.map((exam) => (
                   <li className="list-group-item p-0" key={exam.id}>
                     <button type="button" className={`list-group-item list-group-item-action border-0${(mode === 'routines' ? selectedRoutine : selectedExam) === exam ? ' active' : ''}`}
+                      disabled={mode === 'routines' && loadingRoutine}
                       aria-pressed={(mode === 'routines' ? selectedRoutine : selectedExam) === exam} onClick={() => {
                         if (mode === 'routines') {
-                          setSelectedRoutine(exam);
-                          onRoutineSelect?.(exam);
+                          addRoutine(exam);
                         } else {
                           setSelectedExam(exam);
+                          addExams([exam]);
                           onExamSelect?.(exam);
                         }
                       }}>
@@ -178,35 +205,29 @@ function ExamsList({ onExamSelect, onRoutineSelect, tariff = '1', onTariffChange
                   <th scope="col">TOTAL</th>
                 </tr>
               </thead>
-              <tbody />
+              <tbody>
+                {selectedRows.map(({ exam, quantity, tax, taxRate, unitPrice, total }) => (
+                  <tr key={exam.id}>
+                    <td>
+                      <button type="button" className="border-0 bg-transparent p-0 text-warning"
+                        aria-label={`Eliminar ${exam.description}`} title="Eliminar"
+                        onClick={() => setSelectedExams((current) => current.filter((row) => String(row.exam.id) !== String(exam.id)))}>
+                        <span className="ico ico-trash-2" aria-hidden="true" />
+                      </button>
+                    </td>
+                    <td>{quantity}</td>
+                    <td>{exam.description}</td>
+                    <td>{tax?.description ?? ''}</td>
+                    <td>{numericFormat(taxRate, 2)}</td>
+                    <td>{numericFormat(unitPrice, 2)}</td>
+                    <td>{numericFormat(total, 2)}</td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
           </div>
         </div>
-        <div className="card admission-exams-totals">
-          <div className="card-body">
-            <div className="admission-total-row">
-              <span>SUB-TOTAL</span><span>{numericFormat(0, 2)}</span>
-            </div>
-            <div className="admission-total-row">
-              <div className="admission-discount-field">
-                <label htmlFor="admission-discount">DESCUENTO (%)</label>
-                <input className="form-control" id="admission-discount" type="number" min={0} max={100} step={1} value={discount} onChange={(event) => setDiscount(event.target.value)} />
-              </div>
-              <span>{numericFormat(0, 2)}</span>
-            </div>
-            {loadingTaxes && <small role="status">Cargando impuestos...</small>}
-            {taxError && <small className="text-danger" role="alert">{taxError}</small>}
-            {taxes.map((tax) => (
-              <div className="admission-total-row" key={tax.id}>
-                <span>{Number(tax.value) === 0 ? 'Exonerado' : `IVA: ${numericFormat(tax.value, 2)} %`} sobre {numericFormat(0, 2)}</span>
-                <span>{numericFormat(0, 2)}</span>
-              </div>
-            ))}
-            <div className="admission-total-row fw-bold">
-              <span>TOTAL A PAGAR</span><span>{numericFormat(0, 2)}</span>
-            </div>
-          </div>
-        </div>
+        <AdmissionTotals totals={totals} />
       </section>
     </div>
   );

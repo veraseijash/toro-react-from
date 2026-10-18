@@ -49,3 +49,13 @@ export const getTaxs = async () => {
   const response = await api.get('/tax/');
   return response.data;
 };
+
+export const getDollarvalue = async () => {
+  const response = await api.get('/dollarvalue/get/');
+  return response.data;
+};
+
+export const createDollarvalue = async ({ date, value }) => {
+  const response = await api.post('/dollarvalue/', { date, value });
+  return response.data;
+}

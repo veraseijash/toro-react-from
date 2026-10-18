@@ -24,6 +24,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ico-dolllar-plus:before {
+  content: "\ecf8";
+}
 .ico-circle-r:before {
   content: "\ecf7";
 }

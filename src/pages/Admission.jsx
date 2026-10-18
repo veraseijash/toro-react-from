@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { getClient } from '../services/admissionService';
 import Information from '../components/admission/Information';
 import ExamsList from '../components/admission/ExamsList';
+import MethodPayment from '../components/admission/MethodPayment';
+import useAdmissionTotals from '../components/admission/useAdmissionTotals';
 import '../styles/Admission.css';
 
 const TABS = [
@@ -14,6 +16,7 @@ const TABS = [
 function Admission() {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [tariff, setTariff] = useState('1');
+  const totals = useAdmissionTotals(tariff);
   const [clientId, setClientId] = useState('');
   const [tariffError, setTariffError] = useState('');
 
@@ -82,7 +85,8 @@ function Admission() {
             tabIndex={0}
           >
             {tab.id === 'patient' && <Information onClientChange={setClientId} tariffError={tariffError} />}
-            {tab.id === 'exams' && <ExamsList tariff={tariff} onTariffChange={setTariff} />}
+            {tab.id === 'exams' && <ExamsList tariff={tariff} onTariffChange={setTariff} totals={totals} />}
+            {tab.id === 'payment' && <MethodPayment totals={totals} />}
           </div>
         ))}
       </div>
