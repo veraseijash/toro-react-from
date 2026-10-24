@@ -6,6 +6,7 @@ export default function useAdmissionTotals(tariff) {
   const [taxError, setTaxError] = useState('');
   const [loadingTaxes, setLoadingTaxes] = useState(true);
   const [discount, setDiscount] = useState('0');
+  const [dollar, setDollar] = useState(null);
   const [selectedExams, setSelectedExams] = useState([]);
   const discountRate = Math.min(100, Math.max(0, Number(discount) || 0));
   const selectedRows = selectedExams.map(({ exam, quantity }) => {
@@ -47,5 +48,5 @@ export default function useAdmissionTotals(tariff) {
     return () => { active = false; };
   }, []);
 
-  return { selectedRows, setSelectedExams, discount, setDiscount, subtotal, discountAmount, taxTotals, totalToPay, loadingTaxes, taxError };
+  return { selectedRows, setSelectedExams, discount, setDiscount, subtotal, discountAmount, taxTotals, totalToPay, loadingTaxes, taxError, dollar, setDollar };
 }

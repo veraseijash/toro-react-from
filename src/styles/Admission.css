@@ -139,6 +139,94 @@
   gap: 1rem;
 }
 
+.admission-payments {
+  margin-top: 1rem;
+}
+
+.admission-exams-selected > .admission-payments {
+  margin-top: 0;
+}
+
+.admission-payments-table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--bs-card-color);
+  --bs-table-border-color: var(--bs-card-border-color);
+  min-width: 52rem;
+  font-size: 0.875rem;
+}
+
+.admission-payments-table th,
+.admission-payments-table td {
+  padding: 0.875rem 1rem;
+  text-align: left;
+}
+
+.admission-payments-table thead th {
+  color: #fff;
+}
+
+.admission-payments-table thead th:nth-child(5),
+.admission-payments-table thead th:nth-child(7),
+.admission-payments-table thead th:nth-child(8),
+.admission-payments-table tbody td:nth-child(5),
+.admission-payments-table tbody td:nth-child(7),
+.admission-payments-table tbody th,
+.admission-payments-table tbody td:last-child {
+  text-align: right;
+}
+
+.admission-payments-table tbody th {
+  font-weight: 400;
+}
+
+.admission-payment-delete {
+  color: var(--text-warning);
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.admission-payments-table .admission-payment-row > td {
+  color: #cbb9bf;
+}
+
+.admission-payments-table tbody td:last-child {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admission-payments-balance > * {
+  --bs-table-bg: rgba(255, 255, 255, 0.08);
+  font-weight: 600;
+}
+
+.admission-payment-fields {
+  display: grid;
+  align-items: end;
+  gap: 1.5rem;
+}
+
+.admission-payment-details {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admission-payment-amounts {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admission-payment-panel .card-footer {
+  padding: 1rem 1.2rem;
+  border-top-color: var(--bs-card-border-color);
+}
+
+@media (max-width: 767.98px) {
+  .admission-payment-fields {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+}
+
 .admission-exams-totals .admission-total-row:not(.fw-bold),
 .admission-exams-totals .admission-discount-field .form-control {
   color: #cbb9bf;

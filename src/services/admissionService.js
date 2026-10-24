@@ -59,3 +59,8 @@ export const createDollarvalue = async ({ date, value }) => {
   const response = await api.post('/dollarvalue/', { date, value });
   return response.data;
 }
+
+export const getTypepaymentsActive = async () => {
+  const response = await api.get('/Typepayment/');
+  return response.data;
+}

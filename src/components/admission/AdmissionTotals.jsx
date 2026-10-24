@@ -18,7 +18,7 @@ export default function AdmissionTotals({ totals }) {
   const modalRef = useRef(null);
   const modalInstance = useRef(null);
   const savingRef = useRef(false);
-  const [dollar, setDollar] = useState(null);
+  const { dollar, setDollar } = totals;
   const [loadingDollar, setLoadingDollar] = useState(true);
   const [dollarError, setDollarError] = useState('');
   const [draft, setDraft] = useState('');
@@ -51,7 +51,7 @@ export default function AdmissionTotals({ totals }) {
       modal.dispose();
       modalInstance.current = null;
     };
-  }, []);
+  }, [setDollar]);
 
   const saveDollar = async (event) => {
     event.preventDefault();
