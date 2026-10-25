@@ -291,6 +291,54 @@
   margin-top: 0.25rem;
 }
 
+.admission-register-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 1.5rem;
+}
+
+.admission-register-fields {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.admission-register-validation {
+  --text-warning: #e66b00;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.75rem;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.75rem 1.2rem;
+  border: 1px solid var(--text-warning);
+  border-radius: 0.25rem;
+  background-color: #faedde;
+}
+
+.admission-register-validation-icon {
+  color: var(--text-danger);
+  font-size: 1.875rem;
+  line-height: 1;
+  margin-top: 0.5rem;
+  flex-shrink: 0;
+}
+
+.admission-register-validation ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admission-register-validation li::before {
+  content: '· ';
+}
+
+@media (max-width: 767.98px) {
+  .admission-register-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .admission-document-type {
   flex: 0 0 5rem !important;
 }
@@ -321,6 +369,10 @@
 .admission-age-group > .dropdown-toggle {
   border-top-right-radius: var(--bs-border-radius);
   border-bottom-right-radius: var(--bs-border-radius);
+}
+
+.nav-link.disabled, .nav-link:disabled {
+  color: var(--bs-gray-600);
 }
 
 @media (max-width: 1199.98px) {

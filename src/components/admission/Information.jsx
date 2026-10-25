@@ -32,7 +32,7 @@ const getPhoneDigits = (value, mask) => {
   return digits.slice(0, capacity);
 };
 
-function Information({ onClientChange, tariffError }) {
+function Information({ onClientChange, onClientDetailsChange, onPatientChange, tariffError }) {
   const [fields, setFields] = useState({ name: '', email: '', suggested: '', address: '', observation: '' });
   const [sendEmail, setSendEmail] = useState(true);
   const [ageUnit, setAgeUnit] = useState('Años');
@@ -49,6 +49,10 @@ function Information({ onClientChange, tariffError }) {
   const [sample, setSample] = useState('Tomada aquí');
   const [sampletypeId, setSampletypeId] = useState('');
   const [clientId, setClientId] = useState('');
+  useEffect(() => {
+    onClientChange?.(clientId);
+    onClientDetailsChange?.(clients.find((client) => String(client.id) === clientId) ?? null);
+  }, [clientId, clients, onClientChange, onClientDetailsChange]);
   const [searching, setSearching] = useState(false);
   const [searchMessage, setSearchMessage] = useState('');
   const [searchError, setSearchError] = useState('');
@@ -82,7 +86,6 @@ function Information({ onClientChange, tariffError }) {
       setSampletypeId(String(patient.sample_type_id ?? patient.sampletype_id ?? sampletype?.id ?? sampletypes[0]?.id ?? ''));
       const patientClientId = String(patient.client_id ?? patient.client?.id ?? clients[0]?.id ?? '');
       setClientId(patientClientId);
-      onClientChange?.(patientClientId);
       const emailFlag = patient.send_email ?? patient.send_results_email;
       setSendEmail(emailFlag == null ? Boolean(patient.email) : emailFlag === true || Number(emailFlag) === 1);
       setPhoneDigits(getPhoneDigits(patient.phone, phoneMask));
@@ -102,6 +105,9 @@ function Information({ onClientChange, tariffError }) {
   };
   const [phoneMask, setPhoneMask] = useState('');
   const [phoneDigits, setPhoneDigits] = useState('');
+  useEffect(() => {
+    onPatientChange?.({ name: fields.name, address: fields.address, documentType, identity, phone: phoneDigits });
+  }, [fields.name, fields.address, documentType, identity, phoneDigits, onPatientChange]);
   const phoneSlots = [...phoneMask].flatMap((char, index) => char === '#' ? [index] : []);
   let phoneIndex = 0;
   const phoneValue = [...phoneMask].map((char) => char === '#' ? phoneDigits[phoneIndex++] ?? '_' : char).join('');
@@ -226,8 +232,8 @@ function Information({ onClientChange, tariffError }) {
           </button>
         </div>
         {searching && <small role="status">Buscando paciente...</small>}
-        {searchMessage && <small role="status">{searchMessage}</small>}
-        {searchError && <small className="text-danger" role="alert">{searchError}</small>}
+        {searchMessage && <small className="text-warning" role="status">{searchMessage}</small>}
+        {searchError && <small className="text-warning" role="alert">{searchError}</small>}
         <div className="admission-demographics">
           <div>
             <label className="form-label" htmlFor="admission-birthdate">Fecha nacimiento</label>
@@ -320,7 +326,6 @@ function Information({ onClientChange, tariffError }) {
           <label className="form-label" htmlFor="admission-client">Referido por</label>
           <select className="form-select" id="admission-client" name="client" value={clientId} onChange={(event) => {
             setClientId(event.target.value);
-            onClientChange?.(event.target.value);
           }} disabled={loading || Boolean(errors.clients) || !clients.length}>
             {(loading || !clients.length) && <option>{loading ? 'Cargando...' : 'Sin referidos disponibles'}</option>}
             {clients.map((client) => <option key={client.id} value={client.id}>{client.business_name ?? client.name ?? client.description}</option>)}

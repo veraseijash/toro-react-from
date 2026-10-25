@@ -142,7 +142,7 @@ function Home() {
         aria-hidden="true"
       />
 
-      {isLoading && <p className="text-light">Cargando grupos...</p>}
+      {isLoading && <p className="text-warning" role="status">Cargando grupos...</p>}
       {!isLoading && errorMessage && <p className="text-warning">{errorMessage}</p>}
       {!isLoading && !errorMessage && (
         <>

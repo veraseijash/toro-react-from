@@ -3,7 +3,7 @@ import { getTypepaymentsActive } from '../../services/admissionService';
 import numericFormat from '../../utils/numericFormat';
 import AdmissionTotals from './AdmissionTotals';
 
-export default function MethodPayment({ totals }) {
+export default function MethodPayment({ totals, disabled = false }) {
   const paymentPanelId = useId();
   const [showPaymentPanel, setShowPaymentPanel] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -44,6 +44,7 @@ export default function MethodPayment({ totals }) {
   const balance = Math.round((totalToPay - registeredPayments.reduce((sum, payment) => sum + payment.amount, 0)) * 100) / 100;
 
   const registerPayment = () => {
+    if (disabled) return;
     const amount = Number(paymentAmount);
     if (paymentAmount === '' || !Number.isFinite(amount) || amount <= 0) {
       setPaymentError('El monto no debe estar vacio');
@@ -132,6 +133,7 @@ export default function MethodPayment({ totals }) {
               </table>
             </div>
             <button type="button" className="btn btn-primary d-inline-flex align-items-center gap-2"
+              disabled={disabled}
               aria-expanded={showPaymentPanel} aria-controls={paymentPanelId}
               onClick={() => {
                 if (showPaymentPanel) {

@@ -108,6 +108,28 @@ p {
   color: var(--text-warning) !important;
 }
 
+/* Mensajes de alerta, espera y validación en toda la aplicación. */
+body [role="alert"],
+body [role="status"],
+body .alert,
+body .invalid-feedback,
+body .valid-feedback,
+body .invalid-tooltip,
+body .valid-tooltip,
+body label.text-danger,
+body .edit-user-error,
+body .login-error,
+body .chats-state,
+body .chats-error,
+body .sidebar-conversations-status,
+body .patient-detail-status,
+body .patient-exam-card-message,
+body .setting-exams-status,
+body .setting-exams-table-message,
+body .Toastify__toast {
+  color: var(--text-warning) !important;
+}
+
 .text-info {
   color: var(--text-info) !important;
 }
