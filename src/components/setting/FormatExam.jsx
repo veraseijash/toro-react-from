@@ -100,20 +100,20 @@ export default function FormatVue({ format, onChange }) {
     const handleOutsideClick = (event) => {
       if (!rowTriggerRef.current?.contains(event.target)) clearHighlight();
     };
-    const modal = element.closest('.modal');
+    const modal = element.closest('dialog');
     element.addEventListener('shown.bs.offcanvas', focusPanel);
     element.addEventListener('hidden.bs.offcanvas', restoreFocus);
     element.addEventListener('hide.bs.offcanvas', clearHighlight);
     element.addEventListener('hide.bs.offcanvas', clearElementHighlight);
     document.addEventListener('click', handleOutsideClick, true);
-    modal?.addEventListener('hide.bs.modal', closePanel);
+    modal?.addEventListener('dialog:closed', closePanel);
     return () => {
       element.removeEventListener('shown.bs.offcanvas', focusPanel);
       element.removeEventListener('hidden.bs.offcanvas', restoreFocus);
       element.removeEventListener('hide.bs.offcanvas', clearHighlight);
       element.removeEventListener('hide.bs.offcanvas', clearElementHighlight);
       document.removeEventListener('click', handleOutsideClick, true);
-      modal?.removeEventListener('hide.bs.modal', closePanel);
+      modal?.removeEventListener('dialog:closed', closePanel);
       offcanvas.dispose();
       rowOffcanvasInstanceRef.current = null;
     };

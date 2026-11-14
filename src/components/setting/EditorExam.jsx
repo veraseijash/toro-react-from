@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Modal } from 'bootstrap';
+import createDialog from '../../utils/createDialog';
 import { getTaxs } from '../../services/examsService';
 import WorksheetEditor from './WorksheetEditor';
 import FormatExam from './FormatExam';
@@ -27,16 +27,16 @@ function EditorExam({ examId, examlists, onClose, onSave }) {
 
   useEffect(() => {
     const element = modalRef.current;
-    const modal = new Modal(element);
+    const modal = createDialog(element);
     modalInstanceRef.current = modal;
     const handleHidden = () => onClose(null);
     const handleHide = (event) => { if (savingRef.current) event.preventDefault(); };
-    element.addEventListener('hide.bs.modal', handleHide);
-    element.addEventListener('hidden.bs.modal', handleHidden);
+    element.addEventListener('dialog:beforeclose', handleHide);
+    element.addEventListener('dialog:closed', handleHidden);
     return () => {
-      element.removeEventListener('hidden.bs.modal', handleHidden);
-      element.removeEventListener('hide.bs.modal', handleHide);
-      modal.hide();
+      element.removeEventListener('dialog:closed', handleHidden);
+      element.removeEventListener('dialog:beforeclose', handleHide);
+      modal.close();
       modal.dispose();
       modalInstanceRef.current = null;
     };
@@ -44,7 +44,7 @@ function EditorExam({ examId, examlists, onClose, onSave }) {
 
   useEffect(() => {
     if (examId == null) {
-      modalInstanceRef.current?.hide();
+      modalInstanceRef.current?.close();
       return undefined;
     }
     let isCurrent = true;
@@ -57,7 +57,7 @@ function EditorExam({ examId, examlists, onClose, onSave }) {
     setError('');
     setSaveError('');
     setActiveTab(TABS[0].id);
-    modalInstanceRef.current?.show();
+    modalInstanceRef.current?.showModal();
 
     const data = Array.isArray(examlists)
       ? examlists.find((item) => String(item.id) === String(examId))
@@ -129,7 +129,7 @@ function EditorExam({ examId, examlists, onClose, onSave }) {
         ])),
       });
       savingRef.current = false;
-      modalInstanceRef.current?.hide();
+      modalInstanceRef.current?.close();
     } catch (saveFailure) {
       setSaveError(saveFailure.response?.status === 500
         ? 'El servidor devolvió un error interno (500). Tus cambios se conservan. Revisa el detalle del error en la consola del backend.'
@@ -153,21 +153,21 @@ function EditorExam({ examId, examlists, onClose, onSave }) {
   };
 
   return (
-    <div ref={modalRef} className="modal editor-exam-modal" tabIndex={-1} aria-labelledby="editor-exam-title" aria-hidden="true">
-      <div className="modal-dialog modal-fullscreen">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h2 className="modal-title fs-5" id="editor-exam-title">
+    <dialog ref={modalRef} className="app-dialog editor-exam-modal" aria-labelledby="editor-exam-title">
+      <div className="dialog-panel dialog-fullscreen">
+        <div className="dialog-content">
+          <div className="dialog-header">
+            <h2 className="dialog-title fs-5" id="editor-exam-title">
               {exam?.description ?? 'Editar examen'}
             </h2>
             <div className="d-flex align-items-center gap-3 ms-auto ps-3">
               <button type="button" className="btn btn-primary"
                 disabled={!exam || Boolean(error) || isLoadingTaxes || Boolean(taxError) || isSaving}
                 onClick={handleSave}>{isSaving ? 'Registrando...' : 'Registrar'}</button>
-              <button type="button" className="btn-close m-0" data-bs-dismiss="modal" aria-label="Cerrar" disabled={isSaving} />
+              <button type="button" className="btn-close m-0" data-dialog-close aria-label="Cerrar" disabled={isSaving} />
             </div>
           </div>
-          <div className="modal-body" inert={isSaving ? true : undefined}>
+          <div className="dialog-body" inert={isSaving ? true : undefined}>
             {saveError && <p className="text-danger" role="alert">{saveError}</p>}
             {error && <p className="text-danger" role="alert">{error}</p>}
             <ul className="nav nav-tabs" role="tablist" aria-label="Editor de examen">
@@ -300,7 +300,7 @@ function EditorExam({ examId, examlists, onClose, onSave }) {
           </div>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }
 

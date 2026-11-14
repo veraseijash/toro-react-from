@@ -938,7 +938,7 @@ body {
   overflow: hidden;
   color: #292c33;
   border-color: #292c33;
-  background: #fff;
+  background: #f5f5f5;
 }
 
 .patient-exam-card-header,
@@ -1215,20 +1215,27 @@ body {
   gap: 0.9rem;
 }
 
-.patient-canceled-icon {
+.patient-avatar-wrap {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+}
+
+.patient-avatar-canceled .patient-avatar {
+  border-color: var(--text-danger);
+}
+
+.patient-avatar-canceled::after {
   position: absolute;
-  top: 0rem;
-  right: 0rem;
-  display: inline-flex;
-  width: 2rem;
-  height: 2rem;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  background: #66676a;
-  font-size: 1rem;
-  z-index: 1;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  content: '';
+  background: var(--text-danger);
+  transform: translateY(-50%) rotate(-45deg);
+  pointer-events: none;
 }
 
 .patient-avatar {
@@ -2896,14 +2903,85 @@ body {
   margin: -1px -1px 0;
 }
 
-.modal-backdrop.show {
-  opacity: 0.68;
+/* Native HTML dialogs. Layout and backdrop are independent of Bootstrap. */
+body:has(dialog.app-dialog[open]) {
+  overflow: hidden;
 }
 
-.modal-content {
-  --bs-modal-color: #1e1d1b;
-  --bs-modal-bg: #d8d2c6;
-  --bs-modal-border-color: rgba(255, 255, 255, 0.42);
+dialog.app-dialog {
+  width: min(500px, calc(100% - 2rem));
+  max-width: none;
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  color: var(--sidebar-text);
+  border: 0;
+  background: transparent;
+}
+
+dialog.app-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.68);
+}
+
+dialog.app-dialog:has(.dialog-lg) {
+  width: min(800px, calc(100% - 2rem));
+}
+
+dialog.app-dialog:has(.dialog-fullscreen) {
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+}
+
+.dialog-panel {
+  width: 100%;
+  min-height: 0;
+}
+
+.dialog-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.dialog-scrollable .dialog-content {
+  max-height: calc(100dvh - 2rem);
+}
+
+.dialog-fullscreen,
+.dialog-fullscreen .dialog-content {
+  height: 100%;
+}
+
+.dialog-fullscreen .dialog-content {
+  border-radius: 0;
+}
+
+.dialog-header,
+.dialog-footer {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.dialog-body {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.dialog-scrollable .dialog-body,
+.dialog-fullscreen .dialog-body {
+  overflow-y: auto;
+}
+
+.dialog-footer {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.dialog-content {
   overflow: hidden;
   padding: 7px;
   color: #1e1d1b;
@@ -2916,7 +2994,7 @@ body {
     0 14px 30px rgba(0, 0, 0, 0.48);
 }
 
-.modal-header {
+.dialog-header {
   position: relative;
   min-height: 36px;
   padding: 0.48rem 2.5rem;
@@ -2933,7 +3011,7 @@ body {
     0 0 8px rgba(77, 143, 192, 0.3);
 }
 
-.modal-title {
+.dialog-title {
   width: 100%;
   color: #fff;
   font-size: 1rem;
@@ -2943,7 +3021,7 @@ body {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.82);
 }
 
-.modal-header .btn-close {
+.dialog-header .btn-close {
   position: absolute;
   top: 50%;
   right: 0.75rem;
@@ -2956,19 +3034,19 @@ body {
   transform: translateY(-50%);
 }
 
-.modal-body {
+.dialog-body {
   padding: 1rem 1.25rem 0.75rem;
   color: #24211e;
   background: linear-gradient(180deg, #e3ddd1 0%, #d0c9bc 100%);
   text-align: left;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.52);
 }
-.modal-body .form-label,
-.modal-body .form-check-label {
+.dialog-body .form-label,
+.dialog-body .form-check-label {
   color: #171717;
 }
 
-.editor-exam-modal .modal-body {
+.editor-exam-modal .dialog-body {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -3014,9 +3092,9 @@ body {
   padding: 1rem;
 }
 
-.editor-exam-modal .modal-body,
-.setting-exams-prices-modal .modal-body,
-.setting-exams-prices-modal .modal-footer {
+.editor-exam-modal .dialog-body,
+.setting-exams-prices-modal .dialog-body,
+.setting-exams-prices-modal .dialog-footer {
   color: #e7e5e2;
   background:
     radial-gradient(circle at 82% 5%, rgba(148, 139, 126, 0.2), transparent 35%),
@@ -3024,7 +3102,7 @@ body {
   text-shadow: none;
 }
 
-.setting-exams-prices-modal .modal-footer {
+.setting-exams-prices-modal .dialog-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.34);
 }
 
@@ -3116,7 +3194,7 @@ body {
   outline: 1px solid currentColor;
 }
 
-.modal-footer {
+.dialog-footer {
   padding: 0.55rem 0.75rem 0.75rem;
   justify-content: center;
   gap: 0.55rem;
@@ -3125,7 +3203,7 @@ body {
   background: linear-gradient(180deg, #d0c9bc 0%, #c3bcaf 100%);
 }
 
-.modal-footer > * {
+.dialog-footer > * {
   min-width: 80px;
   margin: 0;
 }

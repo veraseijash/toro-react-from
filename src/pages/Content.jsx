@@ -1,9 +1,15 @@
+import createDialog from '../utils/createDialog';
 import { useEffect, useRef } from 'react';
 import { Tooltip } from 'bootstrap';
 import { toast } from 'react-toastify';
 
 function Content() {
   const homeRef = useRef(null);
+  const dialogRef = useRef(null);
+  useEffect(() => {
+    const dialog = createDialog(dialogRef.current);
+    return () => dialog.dispose();
+  }, []);
 
   useEffect(() => {
     const tooltipElements = homeRef.current?.querySelectorAll('[data-bs-toggle="tooltip"]') ?? [];
@@ -141,7 +147,7 @@ function Content() {
               <p className="card-text">
                 Lorem ipsum va innen and outer message.
               </p>
-              <button type="button" className="mt-4 btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+              <button type="button" className="mt-4 btn btn-primary" onClick={() => dialogRef.current.showModal()}>
                 Abrir modal
               </button>
             </div>
@@ -216,25 +222,25 @@ function Content() {
           </div>
         </div>
       </div>
-      <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Modal Dialog</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <dialog ref={dialogRef} className="app-dialog" id="exampleModal" aria-labelledby="exampleModalLabel">
+        <div className="dialog-panel">
+          <div className="dialog-content">
+            <div className="dialog-header">
+              <h5 id="exampleModalLabel" className="dialog-title">Modal Dialog</h5>
+              <button type="button" className="btn-close" data-dialog-close aria-label="Close"></button>
             </div>
 
-            <div className="modal-body">
+            <div className="dialog-body">
               Content...
             </div>
 
-            <div className="modal-footer">
-              <button className="btn" data-bs-dismiss="modal">Cancel</button>
+            <div className="dialog-footer">
+              <button className="btn" data-dialog-close>Cancel</button>
               <button className="btn btn-primary">Aceptar</button>
             </div>
           </div>
         </div>
-      </div>
+      </dialog>
     </div>
   );
 }

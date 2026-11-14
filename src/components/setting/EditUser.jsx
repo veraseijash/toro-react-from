@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Modal } from 'bootstrap';
+import createDialog from '../../utils/createDialog';
 import { IMAGES_BASE_URL } from '../../config/appConfig';
 import '../../styles/EditUser.css';
 
@@ -83,17 +83,17 @@ export default function EditUser({ user, onClose, onSave }) {
 
   useEffect(() => {
     const element = modalRef.current;
-    const modal = new Modal(element);
+    const modal = createDialog(element);
     modalInstanceRef.current = modal;
     const hidden = () => closeRef.current();
     const preventClose = (event) => { if (savingRef.current) event.preventDefault(); };
-    element.addEventListener('hide.bs.modal', preventClose);
-    element.addEventListener('hidden.bs.modal', hidden);
-    modal.show();
+    element.addEventListener('dialog:beforeclose', preventClose);
+    element.addEventListener('dialog:closed', hidden);
+    modal.showModal();
     return () => {
-      element.removeEventListener('hidden.bs.modal', hidden);
-      element.removeEventListener('hide.bs.modal', preventClose);
-      modal.hide();
+      element.removeEventListener('dialog:closed', hidden);
+      element.removeEventListener('dialog:beforeclose', preventClose);
+      modal.close();
       modal.dispose();
     };
   }, []);
@@ -200,7 +200,7 @@ export default function EditUser({ user, onClose, onSave }) {
         signatureChanged: draft.signatureChanged, signatureFile: draft.signatureFile,
       });
       savingRef.current = false;
-      modalInstanceRef.current?.hide();
+      modalInstanceRef.current?.close();
     } catch (error) {
       setNotice(error.response?.data?.message || error.message || 'No fue posible guardar los cambios. Revisa los datos e inténtalo de nuevo.');
     } finally {
@@ -210,17 +210,17 @@ export default function EditUser({ user, onClose, onSave }) {
   };
 
   return (
-    <div ref={modalRef} className="modal setting-exams-prices-modal edit-user-modal" tabIndex={-1}
-      aria-labelledby="edit-user-title" aria-hidden="true">
-      <div className="modal-dialog modal-fullscreen">
-        <div className="modal-content">
-          <div className="modal-header gap-3">
+    <dialog ref={modalRef} className="app-dialog setting-exams-prices-modal edit-user-modal"
+      aria-labelledby="edit-user-title">
+      <div className="dialog-panel dialog-fullscreen">
+        <div className="dialog-content">
+          <div className="dialog-header gap-3">
             <button type="button" data-edit-user-control disabled={saving}
-              data-bs-dismiss="modal"><span className="ico ico-arrow-left4 text-white" aria-hidden="true" /><span className="text-white">Volver</span></button>
-            <h2 className="modal-title fs-5" id="edit-user-title">Usuario {user.name ?? ''}</h2>
+              data-dialog-close><span className="ico ico-arrow-left4 text-white" aria-hidden="true" /><span className="text-white">Volver</span></button>
+            <h2 className="dialog-title fs-5" id="edit-user-title">Usuario {user.name ?? ''}</h2>
             <button type="submit" form="edit-user-form" disabled={saving} className="btn btn-primary ms-auto flex-shrink-0">{saving ? 'Registrando...' : 'Registrar'}</button>
           </div>
-          <div className="modal-body scrollbar-thin">
+          <div className="dialog-body scrollbar-thin">
             <form id="edit-user-form" onSubmit={validate} noValidate aria-busy={saving}>
               {notice && <p className="edit-user-error" role="alert">{notice}</p>}
               <fieldset disabled={saving}>
@@ -275,6 +275,6 @@ export default function EditUser({ user, onClose, onSave }) {
           </div>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }

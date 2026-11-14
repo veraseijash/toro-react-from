@@ -1,3 +1,4 @@
+import createDialog from '../../utils/createDialog';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Tooltip } from 'bootstrap';
@@ -43,6 +44,8 @@ function List({
 }) {
   const { session } = useAuth();
   const listRef = useRef(null);
+  const annulDialogRef = useRef(null);
+  const annullingRef = useRef(false);
   const actionsMenuRef = useRef(null);
   const [openExamsId, setOpenExamsId] = useState(null);
   const [examsMenuPosition, setExamsMenuPosition] = useState(null);
@@ -80,6 +83,22 @@ function List({
     setAnnulErrors({});
     setIsAnnullingPatient(false);
   };
+
+  annullingRef.current = isAnnullingPatient;
+  useEffect(() => {
+    if (annulPatientId == null) return undefined;
+    const element = annulDialogRef.current;
+    const dialog = createDialog(element);
+    const preventClose = (event) => { if (annullingRef.current) event.preventDefault(); };
+    element.addEventListener('dialog:beforeclose', preventClose);
+    element.addEventListener('dialog:closed', closeAnnulModal);
+    dialog.showModal();
+    return () => {
+      element.removeEventListener('dialog:beforeclose', preventClose);
+      element.removeEventListener('dialog:closed', closeAnnulModal);
+      dialog.dispose();
+    };
+  }, [annulPatientId]);
 
   const openAnnulModal = (patientId) => {
     const canAnnulPatient = hasPermission(
@@ -238,20 +257,16 @@ function List({
             }}
           >
             <div className="card-body patient-card-body">
-              {isCanceled && (
-                <span
-                  className="patient-canceled-icon text-warning"
-                  aria-label="Paciente anulado"
-                  title="Paciente anulado"
-                >
-                  <span className="ico ico-user-times" aria-hidden="true" />
-                </span>
-              )}
-              <img
-                className="patient-avatar"
-                src={avatar}
-                alt={Number(patient.sex) === 1 ? 'Paciente hombre' : 'Paciente mujer'}
-              />
+              <span
+                className={`patient-avatar-wrap${isCanceled ? ' patient-avatar-canceled' : ''}`}
+                title={isCanceled ? 'Paciente anulado' : undefined}
+              >
+                <img
+                  className="patient-avatar"
+                  src={avatar}
+                  alt={isCanceled ? 'Paciente anulado' : Number(patient.sex) === 1 ? 'Paciente hombre' : 'Paciente mujer'}
+                />
+              </span>
 
               <div className="patient-card-info">
                 <strong className="patient-name" title={patient.name}>
@@ -419,29 +434,25 @@ function List({
 
       {annulPatientId != null && createPortal(
         <>
-          <div
-            className="modal fade show"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="annul-patient-modal-title"
-            style={{ display: 'block' }}
-          >
-            <div className="modal-dialog modal-dialog-centered">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h2 className="modal-title fs-5" id="annul-patient-modal-title">
+          <dialog ref={annulDialogRef}
+            className="app-dialog"
+            aria-labelledby="annul-patient-dialog-title">
+            <div className="dialog-panel dialog-centered">
+              <div className="dialog-content">
+                <div className="dialog-header">
+                  <h2 className="dialog-title fs-5" id="annul-patient-dialog-title">
                     Anular paciente por
                   </h2>
                   <button
                     type="button"
                     className="btn-close"
                     aria-label="Cerrar"
-                    onClick={closeAnnulModal}
+                    onClick={() => { if (!isAnnullingPatient) closeAnnulModal(); }}
                   />
                 </div>
 
                 <form onSubmit={handleAnnulPatient} noValidate>
-                  <div className="modal-body">
+                  <div className="dialog-body">
                     <div className="mb-3">
                       <label className="form-label" htmlFor="annul-patient-user-name">
                         Nombre de usuario
@@ -461,7 +472,7 @@ function List({
                         }}
                       />
                       {annulErrors.userName && (
-                        <label className="invalid-feedback d-block text-danger" htmlFor="annul-patient-user-name">
+                        <label className="invalid-feedback d-block text-warning" htmlFor="annul-patient-user-name">
                           {annulErrors.userName}
                         </label>
                       )}
@@ -486,23 +497,23 @@ function List({
                         }}
                       />
                       {annulErrors.password && (
-                        <label className="invalid-feedback d-block text-danger" htmlFor="annul-patient-password">
+                        <label className="invalid-feedback d-block text-warning" htmlFor="annul-patient-password">
                           {annulErrors.password}
                         </label>
                       )}
                       {annulErrors.form && (
-                        <label className="text-danger d-block mt-2" role="alert">
+                        <label className="text-warning d-block mt-2" role="alert">
                           {annulErrors.form}
                         </label>
                       )}
                     </div>
                   </div>
 
-                  <div className="modal-footer">
+                  <div className="dialog-footer">
                     <button
                       type="button"
                       className="btn btn-secondary"
-                      onClick={closeAnnulModal}
+                      onClick={() => { if (!isAnnullingPatient) closeAnnulModal(); }}
                       disabled={isAnnullingPatient}
                     >
                       Cancelar
@@ -514,8 +525,7 @@ function List({
                 </form>
               </div>
             </div>
-          </div>
-          <div className="modal-backdrop fade show" onClick={closeAnnulModal} />
+          </dialog>
         </>,
         document.body,
       )}

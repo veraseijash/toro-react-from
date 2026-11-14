@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { Modal } from 'bootstrap';
+import createDialog from '../../utils/createDialog';
 import { createDollarvalue, getDollarvalue } from '../../services/admissionService';
 import numericFormat from '../../utils/numericFormat';
 
@@ -37,17 +37,17 @@ export default function AdmissionTotals({ totals }) {
       if (active) setLoadingDollar(false);
     });
     const element = modalRef.current;
-    const modal = new Modal(element);
+    const modal = createDialog(element);
     modalInstance.current = modal;
     const preventHide = (event) => { if (savingRef.current) event.preventDefault(); };
     const focusInput = () => element.querySelector('input')?.focus();
-    element.addEventListener('hide.bs.modal', preventHide);
-    element.addEventListener('shown.bs.modal', focusInput);
+    element.addEventListener('dialog:beforeclose', preventHide);
+    element.addEventListener('dialog:opened', focusInput);
     return () => {
       active = false;
-      element.removeEventListener('hide.bs.modal', preventHide);
-      element.removeEventListener('shown.bs.modal', focusInput);
-      modal.hide();
+      element.removeEventListener('dialog:beforeclose', preventHide);
+      element.removeEventListener('dialog:opened', focusInput);
+      modal.close();
       modal.dispose();
       modalInstance.current = null;
     };
@@ -71,7 +71,7 @@ export default function AdmissionTotals({ totals }) {
       setDollar(saved ?? payload);
       setDollarError('');
       savingRef.current = false;
-      modalInstance.current?.hide();
+      modalInstance.current?.close();
     } catch {
       setSaveError('No se pudo guardar el valor del dólar. Intenta nuevamente.');
     } finally {
@@ -90,7 +90,7 @@ export default function AdmissionTotals({ totals }) {
                 <button type="button" aria-label="Nuevo valor del Dolar" style={{ color: 'inherit', background: 'none', border: 0, padding: 0 }} onClick={() => {
                   setDraft('');
                   setSaveError('');
-                  modalInstance.current?.show();
+                  modalInstance.current?.showModal();
                 }}><span className="ico ico-dolllar-plus ico-2x" aria-hidden="true"></span></button>
                 <span>Valor del dólar{dollar && ` (${(dollar.date instanceof Date ? dollar.date.toISOString() : String(dollar.date)).slice(0, 10).split('-').reverse().join('/')}) $${numericFormat(dollar.value, 2)}`}</span>
               </div>
@@ -122,24 +122,24 @@ export default function AdmissionTotals({ totals }) {
             </div>
           </div>
         </div>
-        <div ref={modalRef} className="modal" tabIndex={-1} aria-labelledby={`${dollarId}-title`} aria-hidden="true">
-          <div className="modal-dialog modal-dialog-centered">
-            <form className="modal-content" onSubmit={saveDollar}>
-              <div className="modal-header">
-                <h2 className="modal-title fs-5" id={`${dollarId}-title`}>Nuevo valor del Dolar</h2>
+        <dialog ref={modalRef} className="app-dialog" aria-labelledby={`${dollarId}-title`}>
+          <div className="dialog-panel dialog-centered">
+            <form className="dialog-content" onSubmit={saveDollar}>
+              <div className="dialog-header">
+                <h2 className="dialog-title fs-5" id={`${dollarId}-title`}>Nuevo valor del Dolar</h2>
               </div>
-              <div className="modal-body">
+              <div className="dialog-body">
                 <label htmlFor={dollarId} className="form-label">Valor del dólar</label>
                 <input id={dollarId} className="form-control" type="number" min="0.000001" step="any" required value={draft} disabled={saving} onChange={(event) => setDraft(event.target.value)} />
                 {saveError && <p className="text-danger mt-2" role="alert">{saveError}</p>}
               </div>
-              <div className="modal-footer">
+              <div className="dialog-footer">
                 <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Guardando...' : 'Aceptar'}</button>
-                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" disabled={saving}>Cancelar</button>
+                <button type="button" className="btn btn-secondary" data-dialog-close disabled={saving}>Cancelar</button>
               </div>
             </form>
           </div>
-        </div>
+        </dialog>
         </>
   );
 }

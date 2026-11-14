@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Modal, Tooltip } from 'bootstrap';
+import { Tooltip } from 'bootstrap';
+import createDialog from '../utils/createDialog';
 import { toast } from 'react-toastify';
 import EditorExam from '../components/setting/EditorExam';
 import { createExamList, updateExamList, getTaxs, createExamgroup, getExamgroup, getExamgroupsAll, updateExamgroup, updateGroupCosts } from '../services/examsService';
@@ -61,7 +62,7 @@ function SettingExams() {
 
   useEffect(() => {
     const element = examModalRef.current;
-    const modal = new Modal(element);
+    const modal = createDialog(element);
     examModalInstanceRef.current = modal;
     const onHide = (event) => {
       if (savingExamRef.current) event.preventDefault();
@@ -70,13 +71,13 @@ function SettingExams() {
       taxRequestRef.current += 1;
       groupMenuButtonRef.current?.focus();
     };
-    element.addEventListener('hide.bs.modal', onHide);
-    element.addEventListener('hidden.bs.modal', onHidden);
+    element.addEventListener('dialog:beforeclose', onHide);
+    element.addEventListener('dialog:closed', onHidden);
     return () => {
       taxRequestRef.current += 1;
-      element.removeEventListener('hide.bs.modal', onHide);
-      element.removeEventListener('hidden.bs.modal', onHidden);
-      modal.hide();
+      element.removeEventListener('dialog:beforeclose', onHide);
+      element.removeEventListener('dialog:closed', onHidden);
+      modal.close();
       modal.dispose();
       examModalInstanceRef.current = null;
     };
@@ -92,7 +93,7 @@ function SettingExams() {
     setTaxError('');
     setIsLoadingTaxes(true);
     const request = ++taxRequestRef.current;
-    examModalInstanceRef.current?.show();
+    examModalInstanceRef.current?.showModal();
     try {
       const response = await getTaxs();
       const rows = Array.isArray(response) ? response : response?.data ?? response?.taxs ?? response?.taxes;
@@ -143,7 +144,7 @@ function SettingExams() {
       if (response?.success === false || response?.ok === false || response?.error) throw new Error('No se registró el examen');
       toast.success('El examen fue creado satisfactoriamente');
       savingExamRef.current = false;
-      examModalInstanceRef.current?.hide();
+      examModalInstanceRef.current?.close();
       setPricesRevision((current) => current + 1);
     } catch {
       toast.error('Presento problemas al tratar de registrar el examen');
@@ -179,7 +180,7 @@ function SettingExams() {
 
   useEffect(() => {
     const element = newGroupModalRef.current;
-    const modal = new Modal(element);
+    const modal = createDialog(element);
     newGroupModalInstanceRef.current = modal;
     const restoreFocus = () => {
       groupModalTriggerRef.current?.focus();
@@ -189,14 +190,14 @@ function SettingExams() {
     const preventCloseWhileSaving = (event) => {
       if (creatingGroupRef.current) event.preventDefault();
     };
-    element.addEventListener('shown.bs.modal', focusDescription);
-    element.addEventListener('hidden.bs.modal', restoreFocus);
-    element.addEventListener('hide.bs.modal', preventCloseWhileSaving);
+    element.addEventListener('dialog:opened', focusDescription);
+    element.addEventListener('dialog:closed', restoreFocus);
+    element.addEventListener('dialog:beforeclose', preventCloseWhileSaving);
     return () => {
-      element.removeEventListener('shown.bs.modal', focusDescription);
-      element.removeEventListener('hidden.bs.modal', restoreFocus);
-      element.removeEventListener('hide.bs.modal', preventCloseWhileSaving);
-      modal.hide();
+      element.removeEventListener('dialog:opened', focusDescription);
+      element.removeEventListener('dialog:closed', restoreFocus);
+      element.removeEventListener('dialog:beforeclose', preventCloseWhileSaving);
+      modal.close();
       modal.dispose();
       newGroupModalInstanceRef.current = null;
     };
@@ -204,18 +205,18 @@ function SettingExams() {
 
   useEffect(() => {
     const modalElement = pricesModalRef.current;
-    const modal = new Modal(modalElement);
+    const modal = createDialog(modalElement);
     pricesModalInstanceRef.current = modal;
     const restoreFocus = () => pricesButtonRef.current?.focus();
     const preventCloseWhileSaving = (event) => {
       if (savingPricesRef.current) event.preventDefault();
     };
-    modalElement.addEventListener('hidden.bs.modal', restoreFocus);
-    modalElement.addEventListener('hide.bs.modal', preventCloseWhileSaving);
+    modalElement.addEventListener('dialog:closed', restoreFocus);
+    modalElement.addEventListener('dialog:beforeclose', preventCloseWhileSaving);
     return () => {
-      modalElement.removeEventListener('hidden.bs.modal', restoreFocus);
-      modalElement.removeEventListener('hide.bs.modal', preventCloseWhileSaving);
-      modal.hide();
+      modalElement.removeEventListener('dialog:closed', restoreFocus);
+      modalElement.removeEventListener('dialog:beforeclose', preventCloseWhileSaving);
+      modal.close();
       modal.dispose();
       pricesModalInstanceRef.current = null;
     };
@@ -314,7 +315,7 @@ function SettingExams() {
       }
       toast.success(editingGroupId != null ? 'Los datos fueron registrados.' : 'Se registró el grupo sin problemas');
       creatingGroupRef.current = false;
-      newGroupModalInstanceRef.current?.hide();
+      newGroupModalInstanceRef.current?.close();
       setGroupsRevision((current) => current + 1);
     } catch {
       toast.error(editingGroupId != null ? 'No se pudo realizar los cambios.' : 'Presento un problema y no se registro el grupo');
@@ -355,7 +356,7 @@ function SettingExams() {
       }
       toast.success('Los cambios de precios fueron realizados correctamente.');
       savingPricesRef.current = false;
-      pricesModalInstanceRef.current?.hide();
+      pricesModalInstanceRef.current?.close();
       setPricesRevision((current) => current + 1);
     } catch {
       toast.error('No se realizó el cambio de precios. Inténtalo nuevamente.');
@@ -543,7 +544,7 @@ function SettingExams() {
                       setIsLoadingGroup(false);
                       setGroupLoadError('');
                       setGroupDescriptionError('');
-                      newGroupModalInstanceRef.current?.show();
+                      newGroupModalInstanceRef.current?.showModal();
                     }}>Nuevo grupo</button>
                     <button
                       ref={pricesButtonRef}
@@ -551,7 +552,7 @@ function SettingExams() {
                         Tooltip.getInstance(pricesButtonRef.current)?.hide();
                         pricesModalRef.current.querySelector('form').reset();
                         setPriceErrors({});
-                        pricesModalInstanceRef.current?.show();
+                        pricesModalInstanceRef.current?.showModal();
                       }}
                       type="button"
                       className="setting-exams-header-icon text-primary"
@@ -587,7 +588,7 @@ function SettingExams() {
                             setGroupLoadError('');
                             setIsLoadingGroup(true);
                             setEditingGroupId(selectedGroupId);
-                            newGroupModalInstanceRef.current?.show();
+                            newGroupModalInstanceRef.current?.showModal();
                           }}>Editar grupo</button></li>
                           <li><button type="button" role="menuitem" disabled={isHidingGroup} onClick={handleHideGroup}>{Number(selectedGroup?.annulled) === 0 ? 'Ocultar grupo' : 'Mostrar grupo'}</button></li>
                           <li className="setting-exams-menu-separator" role="separator" />
@@ -681,14 +682,14 @@ function SettingExams() {
         </section>
       </div>
       <EditorExam examId={editingExamId} examlists={selectedGroup?.examlists} onClose={setEditingExamId} onSave={handleSaveEditedExam} />
-      <div ref={newGroupModalRef} className="modal setting-exams-prices-modal" tabIndex={-1} aria-labelledby="new-exam-group-title" aria-hidden="true">
-        <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-          <form className="modal-content" noValidate onSubmit={handleCreateGroup}>
-            <div className="modal-header">
-              <h2 className="modal-title fs-5" id="new-exam-group-title">{editingGroupId != null ? 'Editar grupo de examen' : 'Nuevo grupo de examen'}</h2>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" disabled={isCreatingGroup} />
+      <dialog ref={newGroupModalRef} className="app-dialog setting-exams-prices-modal" aria-labelledby="new-exam-group-title">
+        <div className="dialog-panel dialog-lg dialog-centered dialog-scrollable">
+          <form className="dialog-content" noValidate onSubmit={handleCreateGroup}>
+            <div className="dialog-header">
+              <h2 className="dialog-title fs-5" id="new-exam-group-title">{editingGroupId != null ? 'Editar grupo de examen' : 'Nuevo grupo de examen'}</h2>
+              <button type="button" className="btn-close" data-dialog-close aria-label="Cerrar" disabled={isCreatingGroup} />
             </div>
-            <div className="modal-body">
+            <div className="dialog-body">
               {isLoadingGroup && <p role="status">Cargando...</p>}
               {groupLoadError && <p className="text-warning" role="alert">{groupLoadError}</p>}
               <fieldset hidden={isLoadingGroup || Boolean(groupLoadError)} disabled={isCreatingGroup || isLoadingGroup || Boolean(groupLoadError)}>
@@ -720,21 +721,21 @@ function SettingExams() {
                 )}
               </fieldset>
             </div>
-            <div className="modal-footer justify-content-end">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" disabled={isCreatingGroup}>Cancelar</button>
+            <div className="dialog-footer justify-content-end">
+              <button type="button" className="btn btn-secondary" data-dialog-close disabled={isCreatingGroup}>Cancelar</button>
               <button type="submit" className="btn btn-primary" disabled={isCreatingGroup || isLoadingGroup || Boolean(groupLoadError)}>{isCreatingGroup ? 'Registrando...' : 'Registrar'}</button>
             </div>
           </form>
         </div>
-      </div>
-      <div ref={examModalRef} className="modal setting-exams-prices-modal" tabIndex={-1} aria-labelledby="new-exam-title" aria-hidden="true">
-        <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-          <form className="modal-content" noValidate onSubmit={handleCreateExam}>
-            <div className="modal-header">
-              <h2 className="modal-title fs-5" id="new-exam-title">Crear nuevo examen</h2>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" disabled={isSavingExam} />
+      </dialog>
+      <dialog ref={examModalRef} className="app-dialog setting-exams-prices-modal" aria-labelledby="new-exam-title">
+        <div className="dialog-panel dialog-lg dialog-centered dialog-scrollable">
+          <form className="dialog-content" noValidate onSubmit={handleCreateExam}>
+            <div className="dialog-header">
+              <h2 className="dialog-title fs-5" id="new-exam-title">Crear nuevo examen</h2>
+              <button type="button" className="btn-close" data-dialog-close aria-label="Cerrar" disabled={isSavingExam} />
             </div>
-            <div className="modal-body">
+            <div className="dialog-body">
               <fieldset disabled={isSavingExam}>
                 {[['description', 'Descripción:', 60], ['abbreviation', 'Abreviatura', 10]].map(([name, label, limit]) => (
                   <div className="mb-3" key={name}>
@@ -782,27 +783,24 @@ function SettingExams() {
                 </div>
               </fieldset>
             </div>
-            <div className="modal-footer justify-content-end">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" disabled={isSavingExam}>Cancelar</button>
+            <div className="dialog-footer justify-content-end">
+              <button type="button" className="btn btn-secondary" data-dialog-close disabled={isSavingExam}>Cancelar</button>
               <button type="submit" className="btn btn-primary" disabled={isSavingExam || isLoadingTaxes || Boolean(taxError)}>{isSavingExam ? 'Registrando...' : 'Registrar'}</button>
             </div>
           </form>
         </div>
-      </div>
-      <div
+      </dialog>
+      <dialog
         ref={pricesModalRef}
-        className="modal setting-exams-prices-modal"
-        tabIndex={-1}
-        aria-labelledby="automatic-prices-title"
-        aria-hidden="true"
-      >
-        <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-          <form className="modal-content" noValidate onSubmit={handleSavePrices}>
-            <div className="modal-header">
-              <h2 className="modal-title fs-5" id="automatic-prices-title">Cambio de precios automático</h2>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" disabled={isSavingPrices} />
+        className="app-dialog setting-exams-prices-modal"
+        aria-labelledby="automatic-prices-title">
+        <div className="dialog-panel dialog-lg dialog-centered dialog-scrollable">
+          <form className="dialog-content" noValidate onSubmit={handleSavePrices}>
+            <div className="dialog-header">
+              <h2 className="dialog-title fs-5" id="automatic-prices-title">Cambio de precios automático</h2>
+              <button type="button" className="btn-close" data-dialog-close aria-label="Cerrar" disabled={isSavingPrices} />
             </div>
-            <div className="modal-body">
+            <div className="dialog-body">
               <fieldset disabled={isSavingPrices}>
               <div className="mb-4">
                 <label className="form-label" htmlFor="automatic-prices-group">Afecta a los grupos:</label>
@@ -883,13 +881,13 @@ function SettingExams() {
               ))}
               </fieldset>
             </div>
-            <div className="modal-footer justify-content-end">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" disabled={isSavingPrices}>Cancelar</button>
+            <div className="dialog-footer justify-content-end">
+              <button type="button" className="btn btn-secondary" data-dialog-close disabled={isSavingPrices}>Cancelar</button>
               <button type="submit" className="btn btn-primary" disabled={isSavingPrices}>{isSavingPrices ? 'Guardando...' : 'Aceptar'}</button>
             </div>
           </form>
         </div>
-      </div>
+      </dialog>
     </div>
   );
 }

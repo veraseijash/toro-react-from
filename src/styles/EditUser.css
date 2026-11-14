@@ -19,17 +19,17 @@
   cursor: pointer;
 }
 
-.edit-user-modal .modal-header {
+.edit-user-modal .dialog-header {
   justify-content: flex-start;
   padding-inline: 1.25rem;
 }
 
-.edit-user-modal .modal-title {
+.edit-user-modal .dialog-title {
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.edit-user-modal .modal-body {
+.edit-user-modal .dialog-body {
   overflow-y: auto;
 }
 
