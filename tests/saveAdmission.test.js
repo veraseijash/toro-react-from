@@ -41,6 +41,23 @@ test('other clients skip waypay and payment items', async () => {
   assert.equal(calls.some(([step]) => step === 'waypay' || step === 'payment'), false);
 });
 
+test('payment condition uses the patient client ID, including string IDs', async () => {
+  const calls = [];
+  const progress = makePaymentProgress();
+  progress.patient.client_id = '1';
+  progress.wayPay.id_client = '1';
+  await saveAdmission(progress, makeServices(calls));
+  assert.equal(calls.filter(([step]) => step === 'waypay').length, 1);
+  assert.equal(calls.find(([step]) => step === 'waypay')[1].id_client, 1);
+  assert.equal(calls.filter(([step]) => step === 'payment').length, 2);
+});
+
+test('client 1 with missing payment header cannot silently finish', async () => {
+  const progress = makeProgress();
+  progress.patient.client_id = 1;
+  await assert.rejects(saveAdmission(progress, makeServices([])), /faltan los datos de way_pay/);
+});
+
 test('retry resumes failed payment without repeating waypay or completed items', async () => {
   const calls = [];
   const progress = makePaymentProgress();

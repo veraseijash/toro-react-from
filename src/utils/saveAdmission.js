@@ -37,10 +37,12 @@ export default async function saveAdmission(progress, services) {
     }
     progress.nextExam += 1;
   }
-  if (progress.wayPay?.id_client === 1) {
+  const paymentClientId = Number(progress.patient?.client_id ?? progress.wayPay?.id_client);
+  if (paymentClientId === 1) {
+    if (!progress.wayPay) throw new Error('El paciente tiene cliente 1, pero faltan los datos de way_pay.');
     if (progress.wayPayId == null) {
       const response = checkAdmissionResponse(await services.createWaypay({
-        ...progress.wayPay, id_patients: progress.patientId,
+        ...progress.wayPay, id_client: paymentClientId, id_patients: progress.patientId,
       }));
       const data = response?.waypay ?? response?.wayPay ?? response?.data ?? response;
       const wayPayId = Number(data?.id ?? data?.wayPayId ?? response?.wayPayId);

@@ -31,7 +31,7 @@ function AdmissionForm({ onReset }) {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [tariff, setTariff] = useState('1');
   const totals = useAdmissionTotals(tariff);
-  const [clientId, setClientId] = useState('');
+  const [clientId, setClientId] = useState('1');
   const [selectedClient, setSelectedClient] = useState(null);
   const [clientDetails, setClientDetails] = useState(null);
   const paymentDisabled = clientId !== '' && clientId !== '1';
@@ -117,7 +117,21 @@ function AdmissionForm({ onReset }) {
           throw new Error('No se pudo identificar el grupo de uno de los exámenes.');
         }
       }
-      await saveAdmission(registrationRef.current, { createPatient, getPatientsTotalByDate, updatePatient, createExam, createWaypay, createWaypayitems, createInvoice, createInvoiceitems, updateLaboratory });
+      const progress = registrationRef.current;
+      const services = { createPatient, getPatientsTotalByDate, updatePatient, createExam, createWaypay, createWaypayitems, createInvoice, createInvoiceitems, updateLaboratory };
+      const tracedServices = Object.fromEntries(Object.entries(services).map(([name, service]) => [name, async (...args) => {
+        try {
+          const response = checkAdmissionResponse(await service(...args));
+          return response;
+        } catch (error) {
+          const message = error.response?.data?.message ?? error.message;
+          throw new Error(`${name}: ${Array.isArray(message) ? message.join(', ') : message}`, { cause: error });
+        }
+      }]));
+      await saveAdmission(progress, tracedServices);
+      if (Number(progress.patient.client_id) === 1 && (!progress.wayPayId || progress.nextPayment !== progress.paymentItems.length)) {
+        throw new Error('No se confirmó el guardado de way_pay y sus formas de pago.');
+      }
       if (registrationRef.current.invoices.length && !registrationRef.current.printed) {
         await printAdmissionInvoices(registrationRef.current);
         registrationRef.current.printed = true;

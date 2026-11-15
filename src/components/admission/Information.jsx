@@ -48,7 +48,7 @@ function Information({ onClientChange, onClientDetailsChange, onPatientChange, t
   const [sex, setSex] = useState('Femenino');
   const [sample, setSample] = useState('Tomada aquí');
   const [sampletypeId, setSampletypeId] = useState('');
-  const [clientId, setClientId] = useState('');
+  const [clientId, setClientId] = useState('1');
   useEffect(() => {
     onClientChange?.(clientId);
     onClientDetailsChange?.(clients.find((client) => String(client.id) === clientId) ?? null);
@@ -180,7 +180,7 @@ function Information({ onClientChange, onClientDetailsChange, onPatientChange, t
             setSampletypeId(String(rows[0]?.id ?? ''));
           } else {
             setClients(rows);
-            setClientId(String(rows[0]?.id ?? ''));
+            setClientId(rows.some((client) => String(client.id) === '1') ? '1' : '');
           }
         } catch {
           failures[key] = ['No se pudieron cargar los tipos de muestra.', 'No se pudieron cargar los referidos.', 'No se pudo cargar la plantilla de teléfono.'][index];
@@ -329,7 +329,7 @@ function Information({ onClientChange, onClientDetailsChange, onPatientChange, t
           <select className="form-select" id="admission-client" name="client" value={clientId} onChange={(event) => {
             setClientId(event.target.value);
           }} disabled={loading || Boolean(errors.clients) || !clients.length}>
-            {(loading || !clients.length) && <option>{loading ? 'Cargando...' : 'Sin referidos disponibles'}</option>}
+            <option value="" disabled>{loading ? 'Cargando...' : !clients.length ? 'Sin referidos disponibles' : 'Selecciona un referido'}</option>
             {clients.map((client) => <option key={client.id} value={client.id}>{client.business_name ?? client.name ?? client.description}</option>)}
           </select>
           {errors.clients && <small className="text-danger" role="alert">{errors.clients}</small>}
