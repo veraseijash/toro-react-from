@@ -3,7 +3,7 @@ import { getTypepaymentsActive } from '../../services/admissionService';
 import numericFormat from '../../utils/numericFormat';
 import AdmissionTotals from './AdmissionTotals';
 
-export default function MethodPayment({ totals, disabled = false }) {
+export default function MethodPayment({ totals, disabled = false, onPaymentsChange }) {
   const paymentPanelId = useId();
   const [showPaymentPanel, setShowPaymentPanel] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -14,6 +14,9 @@ export default function MethodPayment({ totals, disabled = false }) {
   const [received, setReceived] = useState('');
   const [registeredPayments, setRegisteredPayments] = useState([]);
   const [paymentError, setPaymentError] = useState('');
+  useEffect(() => {
+    onPaymentsChange?.(disabled ? [] : registeredPayments);
+  }, [registeredPayments, disabled, onPaymentsChange]);
   const { subtotal, totalToPay, dollar } = totals;
 
   useEffect(() => {
@@ -59,6 +62,8 @@ export default function MethodPayment({ totals, disabled = false }) {
       return;
     }
     setRegisteredPayments((current) => [...current, {
+      typePaymentId: Number(selectedPayment.id),
+      dollar: onlyDollars,
       description: selectedPayment.description,
       detail1: paymentDetails[0],
       detail2: paymentDetails[1],

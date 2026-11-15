@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
-import { getClient } from '../services/admissionService';
+import { useEffect, useRef, useState } from 'react';
+import { getClient, createPatient, getPatientsTotalByDate, updatePatient, createExam, createWaypay, createWaypayitems } from '../services/admissionService';
+import useAuth from '../context/useAuth';
+import saveAdmission from '../utils/saveAdmission';
 import Information from '../components/admission/Information';
 import ExamsList from '../components/admission/ExamsList';
 import MethodPayment from '../components/admission/MethodPayment';
@@ -14,7 +16,15 @@ const TABS = [
   { id: 'register', label: 'Registrar' },
 ];
 
-function Admission() {
+function AdmissionForm({ onReset }) {
+  const { session } = useAuth();
+  const [payments, setPayments] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [registered, setRegistered] = useState(false);
+  const [registrationError, setRegistrationError] = useState('');
+  const savingRef = useRef(false);
+  const registrationRef = useRef(null);
+  const registrationDialogRef = useRef(null);
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [tariff, setTariff] = useState('1');
   const totals = useAdmissionTotals(tariff);
@@ -26,6 +36,85 @@ function Admission() {
     ? { ...selectedClient, ...clientDetails } : selectedClient;
   const [tariffError, setTariffError] = useState('');
   const [patient, setPatient] = useState({ name: '', documentType: 'V', identity: '', address: '' });
+
+  useEffect(() => {
+    if (!registered) return;
+    const dialog = registrationDialogRef.current;
+    dialog.showModal();
+    return () => { dialog.close(); };
+  }, [registered]);
+
+  const handleRegister = async (options) => {
+    if (savingRef.current || registered) return;
+    savingRef.current = true;
+    setIsSaving(true);
+    setRegistrationError('');
+    try {
+      if (!registrationRef.current) {
+        if (!Number(session?.user?.id) || !Number(clientId)) throw new Error('No se pudo identificar al usuario o al cliente.');
+        if (tariffError || totals.loadingTaxes || totals.taxError) throw new Error('Espera a que se carguen correctamente la tarifa y los impuestos.');
+        if (!patient.birthdate) throw new Error('Indica la fecha de nacimiento del paciente.');
+        if (!totals.dollar?.date || !(Number(totals.dollar.value) > 0)) throw new Error('Se requiere un valor del dólar válido.');
+        const now = new Date();
+        const date = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-');
+        const time = [now.getHours(), now.getMinutes(), now.getSeconds()]
+          .map((value) => String(value).padStart(2, '0')).join(':');
+        const activePayments = paymentDisabled ? [] : payments;
+        const totalCanceled = activePayments.reduce((sum, payment) => sum + payment.amount, 0);
+        const taxable = totals.taxTotals.filter((tax) => Number(tax.value) > 0);
+        registrationRef.current = {
+          date, patientId: null, positioned: false, nextExam: 0,
+          wayPayId: null, nextPayment: 0,
+          wayPay: Number(clientId) === 1 ? {
+            id_users: Number(session.user.id), id_client: Number(clientId),
+            date: now, date_patients: now, annulment: false,
+          } : null,
+          paymentItems: activePayments.map((payment) => ({
+            id_type_payment: payment.typePaymentId,
+            description_1: payment.detail1, description_2: payment.detail2,
+            amount: payment.received, total: payment.amount,
+            rate: Number(payment.exchangeRate ?? 0),
+            dollar: payment.dollar, dollar_date: payment.exchangeDate,
+          })),
+          patient: {
+            name: patient.name, document_number: patient.identity.replace(/\B(?=(\d{3})+(?!\d))/g, '.'),
+            verification_code: patient.documentType, age: Number(patient.age), month_year: patient.ageUnit,
+            phone: patient.phone, admission_date: date, admission_time: time, suggested: patient.suggested ?? '',
+            client_id: Number(clientId), birth_date: patient.birthdate, sex: patient.sex === 'Masculino',
+            observation: patient.observation ?? '', total: totals.totalToPay,
+            way_pay_dollars: activePayments.filter((payment) => payment.exchangeRate != null).reduce((sum, payment) => sum + payment.received, 0),
+            total_no_dollars: activePayments.filter((payment) => payment.exchangeRate == null).reduce((sum, payment) => sum + payment.amount, 0),
+            total_canceled: totalCanceled, business_name: options.billing.businessName,
+            rif: options.billing.identity, address: options.billing.address,
+            tax_base: taxable.reduce((sum, tax) => sum + tax.base, 0),
+            iva: taxable.reduce((sum, tax) => sum + Number(tax.value), 0),
+            subtotal: totals.subtotal, discount: Number(totals.discount), discount_total: totals.discountAmount,
+            iva_total: totals.taxTotals.reduce((sum, tax) => sum + tax.amount, 0),
+            dollar_price: Number(totals.dollar.value), dollar_price_date: totals.dollar.date,
+            sample_type: patient.sampleType, sample: patient.sample, email: patient.email ?? '',
+            email_sent: false, email_status: Boolean(patient.sendEmail), user_id: Number(session.user.id), permissions: [],
+          },
+          exams: totals.selectedRows.map(({ exam, quantity, tax, taxRate, unitPrice, subtotal, total }, index) => ({
+            examlistsId: Number(exam.id), date: now, group_id: Number(exam.group_id ?? exam.examgroup_id ?? exam.examgroup?.id),
+            position: Number(exam.position ?? index + 1), amount: quantity, price: unitPrice, total,
+            tax_description: tax?.description ?? '', tax_amount: taxRate,
+            tax_total: Math.round(subtotal * taxRate) / 100, description: exam.description,
+          })),
+        };
+        if (registrationRef.current.exams.some((exam) => !Number.isFinite(exam.group_id))) {
+          registrationRef.current = null;
+          throw new Error('No se pudo identificar el grupo de uno de los exámenes.');
+        }
+      }
+      await saveAdmission(registrationRef.current, { createPatient, getPatientsTotalByDate, updatePatient, createExam, createWaypay, createWaypayitems });
+      setRegistered(true);
+    } catch (error) {
+      setRegistrationError(`${error.message || 'No se pudo completar el registro.'}${registrationRef.current?.patientId ? ` Paciente #${registrationRef.current.patientId}. Al reintentar se continuará con los datos originales.` : ''}`);
+    } finally {
+      savingRef.current = false;
+      setIsSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (!clientId) return;
@@ -104,13 +193,41 @@ function Admission() {
           >
             {tab.id === 'patient' && <Information onClientChange={setClientId} onClientDetailsChange={setSelectedClient} onPatientChange={setPatient} tariffError={tariffError} />}
             {tab.id === 'exams' && <ExamsList tariff={tariff} onTariffChange={setTariff} totals={totals} />}
-            {tab.id === 'payment' && <MethodPayment key={String(paymentDisabled)} totals={totals} disabled={paymentDisabled} />}
-            {tab.id === 'register' && <Register key={clientId} patient={patient} client={client} clientBilling={paymentDisabled} selectedExams={totals.selectedRows} />}
+            {tab.id === 'payment' && <MethodPayment key={String(paymentDisabled)} totals={totals} disabled={paymentDisabled} onPaymentsChange={setPayments} />}
+            {tab.id === 'register' && <>
+              <Register key={clientId} patient={patient} client={client} clientBilling={paymentDisabled} selectedExams={totals.selectedRows} onRegister={handleRegister} isSaving={isSaving} registered={registered} />
+              {registrationError && <p className="text-danger mt-3" role="alert">{registrationError}</p>}
+            </>}
           </div>
         ))}
       </div>
+      <dialog ref={registrationDialogRef} className="app-dialog admission-success-dialog"
+        aria-labelledby="admission-success-title" aria-describedby="admission-success-message"
+        onCancel={(event) => event.preventDefault()}>
+        <div className="dialog-panel dialog-centered">
+          <div className="dialog-content">
+            <div className="dialog-header">
+              <h2 className="dialog-title fs-5" id="admission-success-title">Registro completado</h2>
+            </div>
+            <div className="dialog-body">
+              <p id="admission-success-message" className="mb-0">
+                Paciente {registrationRef.current?.patient.name} fue registrado con el orden de llegada {registrationRef.current?.patientPosition}.
+              </p>
+            </div>
+            <div className="dialog-footer">
+              <button type="button" className="btn btn-primary" onClick={() => {
+                registrationDialogRef.current.close();
+                onReset();
+              }}>Aceptar</button>
+            </div>
+          </div>
+        </div>
+      </dialog>
     </div>
   );
 }
 
-export default Admission;
+export default function Admission() {
+  const [registrationKey, setRegistrationKey] = useState(0);
+  return <AdmissionForm key={registrationKey} onReset={() => setRegistrationKey((key) => key + 1)} />;
+}

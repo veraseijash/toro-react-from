@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-function Register({ patient, client, clientBilling = false, selectedExams = [] }) {
+function Register({ patient, client, clientBilling = false, selectedExams = [], onRegister, isSaving = false, registered = false }) {
   const [validationErrors, setValidationErrors] = useState([]);
   const [receiptType, setReceiptType] = useState('receipt');
   const [printSample, setPrintSample] = useState(true);
@@ -32,6 +32,9 @@ function Register({ patient, client, clientBilling = false, selectedExams = [] }
       errors.push('Registro de información fiscal no puede quedar en blanco');
     }
     setValidationErrors(errors);
+    if (errors.length === 0 && !isSaving && !registered) {
+      onRegister?.({ billing: { ...values }, receiptType: selectedReceiptType, printSample });
+    }
   };
 
   const field = (name, label, maxLength, multiline = false) => {
@@ -102,9 +105,9 @@ function Register({ patient, client, clientBilling = false, selectedExams = [] }
         </div>
       </div>
     </div>
-    <button type="button" className="btn btn-primary d-inline-flex align-items-center gap-2 mt-3" onClick={validateRegistration}>
+    <button type="button" className="btn btn-primary d-inline-flex align-items-center gap-2 mt-3" onClick={validateRegistration} disabled={isSaving || registered}>
       <span className="ico ico-user-check1" aria-hidden="true"></span>
-      REGISTRAR
+      {isSaving ? 'GUARDANDO...' : registered ? 'REGISTRADO' : 'REGISTRAR'}
     </button>
     {validationErrors.length > 0 && (
       <div className="card card-warning mt-3" style={{ width: '550px' }} role="alert" aria-label="Errores de validación">

@@ -64,3 +64,33 @@ export const getTypepaymentsActive = async () => {
   const response = await api.get('/Typepayment/');
   return response.data;
 }
+
+export const createPatient = async (patientData) => {
+  const response = await api.post('/patients/', patientData);
+  return response.data;
+}
+
+export const createExam = async (examenData) => {
+  const response = await api.post('/exams/', examenData);
+  return response.data;
+}
+
+export const getPatientsTotalByDate = async (date) => {
+  const response = await api.get(`/patients/total/${date}`);
+  return response.data;
+}
+
+export const updatePatient = async (patientId, patientData) => {
+  const response = await api.patch(`/patients/${patientId}/`, patientData);
+  return response.data;
+}
+
+export const createWaypay = async (wayPayData) => {
+  const response = await api.post('/waypay/', wayPayData);
+  return response.data;
+}
+
+export const createWaypayitems = async (wayPayData) => {
+  const response = await api.post('/waypayitems/', wayPayData);
+  return response.data;
+}

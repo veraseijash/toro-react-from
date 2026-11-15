@@ -106,8 +106,10 @@ function Information({ onClientChange, onClientDetailsChange, onPatientChange, t
   const [phoneMask, setPhoneMask] = useState('');
   const [phoneDigits, setPhoneDigits] = useState('');
   useEffect(() => {
-    onPatientChange?.({ name: fields.name, address: fields.address, documentType, identity, phone: phoneDigits });
-  }, [fields.name, fields.address, documentType, identity, phoneDigits, onPatientChange]);
+    const sampletype = sampletypes.find((item) => String(item.id) === sampletypeId);
+    onPatientChange?.({ ...fields, documentType, identity, phone: phoneDigits,
+      age, ageUnit, birthdate, sex, sample, sampleType: sampletype?.description ?? sampletype?.name ?? '', sendEmail });
+  }, [fields, documentType, identity, phoneDigits, age, ageUnit, birthdate, sex, sample, sampletypeId, sampletypes, sendEmail, onPatientChange]);
   const phoneSlots = [...phoneMask].flatMap((char, index) => char === '#' ? [index] : []);
   let phoneIndex = 0;
   const phoneValue = [...phoneMask].map((char) => char === '#' ? phoneDigits[phoneIndex++] ?? '_' : char).join('');

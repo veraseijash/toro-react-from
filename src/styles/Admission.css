@@ -392,3 +392,10 @@
     width: 100%;
   }
 }
+.admission-success-dialog .dialog-body,
+.admission-success-dialog .dialog-footer {
+  color: #e7e5e2;
+  background: var(--card-surface);
+  text-shadow: none;
+}
+
