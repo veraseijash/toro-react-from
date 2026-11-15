@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { getClient, createPatient, getPatientsTotalByDate, updatePatient, createExam, createWaypay, createWaypayitems } from '../services/admissionService';
+import { getClient, getLaboratory, createPatient, getPatientsTotalByDate, updatePatient, createExam, createWaypay, createWaypayitems, createInvoice, createInvoiceitems } from '../services/admissionService';
+import { updateLaboratory } from '../services/laboratoryService';
+import buildAdmissionInvoices from '../utils/buildAdmissionInvoices';
+import printAdmissionInvoices from '../utils/printAdmissionInvoices';
 import useAuth from '../context/useAuth';
-import saveAdmission from '../utils/saveAdmission';
+import saveAdmission, { checkAdmissionResponse } from '../utils/saveAdmission';
 import Information from '../components/admission/Information';
 import ExamsList from '../components/admission/ExamsList';
 import MethodPayment from '../components/admission/MethodPayment';
@@ -62,7 +65,15 @@ function AdmissionForm({ onReset }) {
         const activePayments = paymentDisabled ? [] : payments;
         const totalCanceled = activePayments.reduce((sum, payment) => sum + payment.amount, 0);
         const taxable = totals.taxTotals.filter((tax) => Number(tax.value) > 0);
+        let invoices = [];
+        let laboratory = null;
+        if (options.receiptType === 'invoice') {
+          const response = checkAdmissionResponse(await getLaboratory());
+          laboratory = response?.laboratory ?? response?.data ?? response;
+          invoices = buildAdmissionInvoices(totals.selectedRows, laboratory, options.billing, session.user.id, clientId, totals.discount);
+        }
         registrationRef.current = {
+          invoices, laboratory,
           date, patientId: null, positioned: false, nextExam: 0,
           wayPayId: null, nextPayment: 0,
           wayPay: Number(clientId) === 1 ? {
@@ -106,7 +117,11 @@ function AdmissionForm({ onReset }) {
           throw new Error('No se pudo identificar el grupo de uno de los exámenes.');
         }
       }
-      await saveAdmission(registrationRef.current, { createPatient, getPatientsTotalByDate, updatePatient, createExam, createWaypay, createWaypayitems });
+      await saveAdmission(registrationRef.current, { createPatient, getPatientsTotalByDate, updatePatient, createExam, createWaypay, createWaypayitems, createInvoice, createInvoiceitems, updateLaboratory });
+      if (registrationRef.current.invoices.length && !registrationRef.current.printed) {
+        await printAdmissionInvoices(registrationRef.current);
+        registrationRef.current.printed = true;
+      }
       setRegistered(true);
     } catch (error) {
       setRegistrationError(`${error.message || 'No se pudo completar el registro.'}${registrationRef.current?.patientId ? ` Paciente #${registrationRef.current.patientId}. Al reintentar se continuará con los datos originales.` : ''}`);

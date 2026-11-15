@@ -94,3 +94,13 @@ export const createWaypayitems = async (wayPayData) => {
   const response = await api.post('/waypayitems/', wayPayData);
   return response.data;
 }
+
+export const createInvoice = async (invoiceData) => {
+  const response = await api.post('/invoice/', invoiceData);
+  return response.data;
+}
+
+export const createInvoiceitems = async (invoiceItemData) => {
+  const response = await api.post('/invoiceitems/', invoiceItemData);
+  return response.data;
+}
