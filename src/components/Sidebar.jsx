@@ -89,7 +89,9 @@ function Sidebar() {
   const [isConversationsOpen, setIsConversationsOpen] = useState(false);
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isSidebarHoverEnabled, setIsSidebarHoverEnabled] = useState(true);
+  const [isSidebarHoverOpen, setIsSidebarHoverOpen] = useState(false);
+  const sidebarHoverTimer = useRef(null);
+  const sidebarHoverBlocked = useRef(false);
   const messagesButtonRef = useRef(null);
   const conversationsPanelRef = useRef(null);
   const messagesTooltipRef = useRef(null);
@@ -99,6 +101,22 @@ function Sidebar() {
   const canShowMenuItem = (item) => (
     hasPermission(session?.user?.permissions, item.permission)
   );
+
+  useEffect(() => () => window.clearTimeout(sidebarHoverTimer.current), []);
+
+  const scheduleSidebarHover = (event) => {
+    if (event.pointerType !== 'mouse' || !isCollapsed || isSidebarHoverOpen
+      || sidebarHoverBlocked.current || !window.matchMedia('(min-width: 768px)').matches) return;
+
+    window.clearTimeout(sidebarHoverTimer.current);
+    sidebarHoverTimer.current = window.setTimeout(() => setIsSidebarHoverOpen(true), 150);
+  };
+
+  const resetSidebarHover = (blockUntilLeave = false) => {
+    window.clearTimeout(sidebarHoverTimer.current);
+    sidebarHoverBlocked.current = blockUntilLeave;
+    setIsSidebarHoverOpen(false);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -240,14 +258,16 @@ function Sidebar() {
       <label className="sidebar-overlay" htmlFor="sidebar-toggle" aria-label="Cerrar menú" />
 
       <aside
-        className={`sidebar${isCollapsed ? ' sidebar-collapsed' : ''}${isSidebarHoverEnabled ? ' sidebar-hover-enabled' : ''}`}
-        onMouseLeave={() => setIsSidebarHoverEnabled(true)}
+        className={`sidebar${isCollapsed ? ' sidebar-collapsed' : ''}${isSidebarHoverOpen ? ' sidebar-hover-open' : ''}`}
+        onPointerEnter={scheduleSidebarHover}
+        onPointerMove={scheduleSidebarHover}
+        onPointerLeave={() => resetSidebarHover()}
       >
         <button
           type="button"
           className="sidebar-collapse-button"
           onClick={() => {
-            if (!isCollapsed) setIsSidebarHoverEnabled(false);
+            resetSidebarHover(!isCollapsed);
             setIsCollapsed(!isCollapsed);
             setIsConversationsOpen(false);
             setIsProfileMenuOpen(false);
@@ -286,7 +306,7 @@ function Sidebar() {
                   onClick={() => {
                     closeSidebar();
                     if (item.collapseOnClick) {
-                      setIsSidebarHoverEnabled(false);
+                      resetSidebarHover(true);
                       setIsCollapsed(true);
                     }
                   }}
@@ -326,7 +346,7 @@ function Sidebar() {
                       onClick={() => {
                         closeSidebar();
                         if (child.collapseOnClick) {
-                          setIsSidebarHoverEnabled(false);
+                          resetSidebarHover(true);
                           setIsCollapsed(true);
                         }
                       }}
