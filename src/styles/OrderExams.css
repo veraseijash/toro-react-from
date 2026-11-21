@@ -1,7 +1,7 @@
 .order-exams-page .order-exams-drag-icon {
   display: none;
   flex-shrink: 0;
-  color: #fff;
+  color: var(--ui-text);
   font-size: 1.25rem;
 }
 
@@ -108,5 +108,5 @@
 }
 
 .order-exams-list .list-group-item.is-drag-over {
-  background-color: rgba(180, 180, 184, 0.58);
+  background-color: #e2dcff;
 }

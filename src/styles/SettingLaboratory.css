@@ -24,7 +24,7 @@
 }
 
 .setting-laboratory-taxes th {
-  color: #fff;
+  color: var(--ui-text);
   font-size: 0.8rem;
   font-weight: 400;
 }

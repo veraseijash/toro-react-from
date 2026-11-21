@@ -44,7 +44,7 @@
 }
 
 .flow-cash-deposit-number {
-  background: var(--text-warning);
-  color: #212529;
+  background: var(--ui-tint);
+  color: var(--ui-accent);
   font-weight: 700;
 }

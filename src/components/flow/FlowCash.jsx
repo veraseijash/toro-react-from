@@ -151,7 +151,7 @@ export default function FlowCash({ user, date, saving, onSavingChange, onSaved, 
     <form id="flow-cash-form" className="flow-cash" onSubmit={handleSubmit}>
       <fieldset disabled={saving}>
       {saveError && <p role="alert">{saveError}</p>}
-      <h2 className="h5 text-center text-white mb-3">CIERRE DE CAJA {register?.admission_date || date}</h2>
+      <h2 className="h5 text-center mb-3">CIERRE DE CAJA {register?.admission_date || date}</h2>
       <p>Cajero: <span className="small">{user.name}</span></p>
 
       {!hasRegister && loading && <p role="status">Cargando totales...</p>}
@@ -191,7 +191,7 @@ export default function FlowCash({ user, date, saving, onSavingChange, onSaved, 
         </div>
       </div>
 
-      <h3 className="h6 text-white mb-4">Depósitos:</h3>
+      <h3 className="h6 mb-4">Depósitos:</h3>
       <div className="flow-cash-deposits">
         {deposits.map((deposit, index) => (
           <div className="card flow-cash-deposit" key={deposit.localId}>

@@ -210,7 +210,7 @@ export default function MethodPayment({ totals, disabled = false, onPaymentsChan
                 </div>
               </div>
               <div className="card-footer d-flex align-items-center flex-wrap gap-3">
-                <button type="button" className="btn btn-outline-warning" onClick={registerPayment}>REGISTRA FORMA DE PAGO</button>
+                <button type="button" className="btn btn-outline-primary" onClick={registerPayment}>REGISTRA FORMA DE PAGO</button>
                 {paymentError && <span className="text-danger" role="alert">{paymentError}</span>}
               </div>
             </div>

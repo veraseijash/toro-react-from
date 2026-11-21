@@ -86,7 +86,7 @@ export default function AdmissionTotals({ totals }) {
         <div className="card admission-exams-totals">
           <div className="card-body">
             <div style={{ width: '50%' }}>
-              <div className="d-flex align-items-center gap-2" style={{ color: 'var(--text-warning)' }}>
+              <div className="d-flex align-items-center gap-2" style={{ color: 'var(--text-danger)' }}>
                 <button type="button" aria-label="Nuevo valor del Dolar" style={{ color: 'inherit', background: 'none', border: 0, padding: 0 }} onClick={() => {
                   setDraft('');
                   setSaveError('');

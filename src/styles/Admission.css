@@ -11,26 +11,26 @@
 
 .admission-page .nav-pills {
   flex-shrink: 0;
-  --bs-nav-link-color: #f3f1ed;
-  --bs-nav-link-hover-color: #f3f1ed;
-  --bs-nav-pills-link-active-color: #f3f1ed;
-  --bs-nav-pills-link-active-bg: transparent;
+  --bs-nav-link-color: var(--ui-text);
+  --bs-nav-link-hover-color: var(--ui-text);
+  --bs-nav-pills-link-active-color: var(--ui-text);
+  --bs-nav-pills-link-active-bg: var(--ui-tint);
 }
 
 .admission-page .nav-pills .nav-link {
   border: 1px solid transparent;
-  border-bottom-color: #fff;
+  border-bottom-color: var(--ui-border);
   border-radius: 0.375rem 0.375rem 0 0;
 }
 
 .admission-page .nav-pills .nav-link.active {
-  border-color: #fff #fff transparent;
+  border-color: var(--ui-border) var(--ui-border) transparent;
 }
 
 .admission-page .nav-pills::after {
   content: '';
   flex: 1;
-  border-bottom: 1px solid #fff;
+  border-bottom: 1px solid var(--ui-border);
 }
 
 .admission-page .tab-content {
@@ -97,13 +97,13 @@
 }
 
 .admission-selected-table tbody td {
-  --bs-table-color: #cbb9bf;
-  --bs-table-hover-color: #cbb9bf;
-  color: #cbb9bf;
+  --bs-table-color: var(--ui-muted);
+  --bs-table-hover-color: var(--ui-muted);
+  color: var(--ui-muted);
 }
 
 .admission-selected-table thead th {
-  color: #fff;
+  color: var(--ui-text);
 }
 
 .admission-selected-table th,
@@ -162,7 +162,7 @@
 }
 
 .admission-payments-table thead th {
-  color: #fff;
+  color: var(--ui-text);
 }
 
 .admission-payments-table thead th:nth-child(5),
@@ -188,7 +188,7 @@
 }
 
 .admission-payments-table .admission-payment-row > td {
-  color: #cbb9bf;
+  color: var(--ui-muted);
 }
 
 .admission-payments-table tbody td:last-child {
@@ -197,7 +197,7 @@
 }
 
 .admission-payments-balance > * {
-  --bs-table-bg: rgba(255, 255, 255, 0.08);
+  --bs-table-bg: rgb(89 70 213 / 8%);
   font-weight: 600;
 }
 
@@ -229,7 +229,7 @@
 
 .admission-exams-totals .admission-total-row:not(.fw-bold),
 .admission-exams-totals .admission-discount-field .form-control {
-  color: #cbb9bf;
+  color: var(--ui-muted);
 }
 
 .admission-total-row > span:last-child {
@@ -303,7 +303,6 @@
 }
 
 .admission-register-validation {
-  --text-warning: #e66b00;
   display: flex;
   align-items: flex-start;
   gap: 1.75rem;
@@ -394,7 +393,7 @@
 }
 .admission-success-dialog .dialog-body,
 .admission-success-dialog .dialog-footer {
-  color: #e7e5e2;
+  color: var(--ui-text);
   background: var(--card-surface);
   text-shadow: none;
 }

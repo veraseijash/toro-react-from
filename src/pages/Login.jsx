@@ -110,8 +110,8 @@ function Login() {
 
   return (
     <div className="container min-vh-100 d-flex justify-content-center align-items-center py-5">
-      <div>
-        <div className="card shadow" style={{ width: '400px', maxWidth: '100%' }}>
+      <div className="login-panel">
+        <div className="card">
           <div className="card-body p-4">
             <div className="sidebar-brand">
               <div className="sidebar-logo-wrap">

@@ -216,7 +216,7 @@ export default function EditUser({ user, onClose, onSave }) {
         <div className="dialog-content">
           <div className="dialog-header gap-3">
             <button type="button" data-edit-user-control disabled={saving}
-              data-dialog-close><span className="ico ico-arrow-left4 text-white" aria-hidden="true" /><span className="text-white">Volver</span></button>
+              data-dialog-close><span className="ico ico-arrow-left4" aria-hidden="true" /><span>Volver</span></button>
             <h2 className="dialog-title fs-5" id="edit-user-title">Usuario {user.name ?? ''}</h2>
             <button type="submit" form="edit-user-form" disabled={saving} className="btn btn-primary ms-auto flex-shrink-0">{saving ? 'Registrando...' : 'Registrar'}</button>
           </div>

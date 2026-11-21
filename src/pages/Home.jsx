@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import useAuth from '../context/useAuth';
 import { getGroupHtListActiveWithTotals } from '../services/groupHtService';
 import { getLaboratory } from '../services/userService';
 
@@ -8,6 +7,9 @@ function GroupCard({ group }) {
   const total = Number(group.total);
   const totalProcessed = Number(group.total_processed);
   const totalApproved = Number(group.total_approved);
+  const approvalRate = Number.isFinite(totalApproved) && Number.isFinite(total) && total > 0
+    ? Math.min(100, Math.max(0, Math.round(totalApproved / total * 100)))
+    : null;
   const allTotalsAreZero = total === 0 && totalProcessed === 0 && totalApproved === 0;
   const cardVariant = allTotalsAreZero
     ? ''
@@ -20,10 +22,20 @@ function GroupCard({ group }) {
   return (
     <article className={`card group-card${cardVariant}`}>
       <div className="card-body">
-        <div className="group-card-heading" style={{ minHeight: '98px' }}>
-          <span className="group-card-label">Área de trabajo</span>
-          <strong>{group.description}</strong>
-          <span>{group.details || '\u00a0'}</span>
+        <div className="group-card-heading">
+          <div>
+            <span className="group-card-label">Área de trabajo</span>
+            <h2>{group.description}</h2>
+            {group.details && <span>{group.details}</span>}
+          </div>
+          {approvalRate !== null && (
+            <div className="group-approval">
+              <span className="group-approval-ring" style={{ '--approval-rate': `${approvalRate}%` }}>
+                {approvalRate}%
+              </span>
+              <span>Aprobados</span>
+            </div>
+          )}
         </div>
 
         <div className="d-flex gap-2 mt-4">
@@ -63,7 +75,6 @@ function GroupCard({ group }) {
 }
 
 function Home() {
-  const { session } = useAuth();
   const [groups, setGroups] = useState([]);
   const [laboratoryName, setLaboratoryName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -146,7 +157,10 @@ function Home() {
       {!isLoading && errorMessage && <p className="text-warning">{errorMessage}</p>}
       {!isLoading && !errorMessage && (
         <>
-          {laboratoryName && <h3 className="home-laboratory-name">{laboratoryName}</h3>}
+          <header className="home-heading">
+            {laboratoryName && <p>{laboratoryName}</p>}
+            <h1>Panel de laboratorio</h1>
+          </header>
           <div className="group-card-list">
             {groups.map((group) => (
               <GroupCard key={group.id} group={group} />
