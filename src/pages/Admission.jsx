@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { getClient, getLaboratory, createPatient, getPatientsTotalByDate, updatePatient, createExam, createWaypay, createWaypayitems, createInvoice, createInvoiceitems } from '../services/admissionService';
 import { updateLaboratory } from '../services/laboratoryService';
 import buildAdmissionInvoices from '../utils/buildAdmissionInvoices';
-import printAdmissionInvoices from '../utils/printAdmissionInvoices';
+import printAdmissionInvoices, { buildInvoiceDocument } from '../utils/printAdmissionInvoices';
+import printAdmissionReceipt, { buildReceiptDocument } from '../utils/primtAdmissionReceipt';
 import useAuth from '../context/useAuth';
 import saveAdmission, { checkAdmissionResponse } from '../utils/saveAdmission';
 import Information from '../components/admission/Information';
@@ -66,13 +67,12 @@ function AdmissionForm({ onReset }) {
         const totalCanceled = activePayments.reduce((sum, payment) => sum + payment.amount, 0);
         const taxable = totals.taxTotals.filter((tax) => Number(tax.value) > 0);
         let invoices = [];
-        let laboratory = null;
+        const response = checkAdmissionResponse(await getLaboratory());
+        const laboratory = response?.laboratory ?? response?.data ?? response;
         if (options.receiptType === 'invoice') {
-          const response = checkAdmissionResponse(await getLaboratory());
-          laboratory = response?.laboratory ?? response?.data ?? response;
           invoices = buildAdmissionInvoices(totals.selectedRows, laboratory, options.billing, session.user.id, clientId, totals.discount);
         }
-        registrationRef.current = {
+        const registration = {
           invoices, laboratory,
           date, patientId: null, positioned: false, nextExam: 0,
           wayPayId: null, nextPayment: 0,
@@ -112,10 +112,14 @@ function AdmissionForm({ onReset }) {
             tax_total: Math.round(subtotal * taxRate) / 100, description: exam.description,
           })),
         };
-        if (registrationRef.current.exams.some((exam) => !Number.isFinite(exam.group_id))) {
-          registrationRef.current = null;
+        if (registration.exams.some((exam) => !Number.isFinite(exam.group_id))) {
           throw new Error('No se pudo identificar el grupo de uno de los exámenes.');
         }
+        registration.invoiceHtml = invoices.length ? buildInvoiceDocument(registration) : null;
+        if (options.receiptType === 'receipt') {
+          registration.receipt = buildReceiptDocument(registration, totals.selectedRows, options.billing, totals.discount);
+        }
+        registrationRef.current = registration;
       }
       const progress = registrationRef.current;
       const services = { createPatient, getPatientsTotalByDate, updatePatient, createExam, createWaypay, createWaypayitems, createInvoice, createInvoiceitems, updateLaboratory };
@@ -132,9 +136,14 @@ function AdmissionForm({ onReset }) {
       if (Number(progress.patient.client_id) === 1 && (!progress.wayPayId || progress.nextPayment !== progress.paymentItems.length)) {
         throw new Error('No se confirmó el guardado de way_pay y sus formas de pago.');
       }
-      if (registrationRef.current.invoices.length && !registrationRef.current.printed) {
-        await printAdmissionInvoices(registrationRef.current);
-        registrationRef.current.printed = true;
+      if (progress.receipt && !progress.receipt.counterUpdated) {
+        await tracedServices.updateLaboratory(1, { receipt_number: progress.receipt.lastNumber });
+        progress.receipt.counterUpdated = true;
+      }
+      if (!progress.printed) {
+        if (progress.receipt) await printAdmissionReceipt(progress.receipt.html);
+        else if (progress.invoiceHtml) await printAdmissionInvoices(progress.invoiceHtml);
+        progress.printed = true;
       }
       setRegistered(true);
     } catch (error) {

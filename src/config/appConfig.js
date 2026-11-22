@@ -13,6 +13,12 @@ export const MENU_ITEMS = [
         permission: 'routine-admission',
         collapseOnClick: true,
       },
+      {
+        to: '/routine/worksheet',
+        label: 'Hoja de trabajo',
+        permission: '',
+        collapseOnClick: true,
+      },
     ],
   },
   {

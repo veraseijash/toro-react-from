@@ -1619,13 +1619,64 @@ body {
   overflow: hidden;
 }
 
-.setting-exams-columns {
+.setting-exams-columns,
+.worksheet-columns {
   display: grid;
   min-height: 0;
   flex: 1;
   grid-template-columns: 280px minmax(0, 1fr);
   gap: 1.5rem;
   overflow: hidden;
+}
+
+.worksheet-search-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.worksheet-search-controls input {
+  min-width: 0;
+  border-radius: 0.75rem;
+}
+
+.worksheet-reset {
+  display: grid;
+  place-items: center;
+  padding: 0.35rem;
+  border: 0;
+  background: transparent;
+  color: var(--ui-accent);
+  font-size: 1.3rem;
+}
+
+.setting-exams-group-list.worksheet-group-list {
+  margin-top: 1rem;
+}
+
+.setting-exams-group-list.worksheet-group-list li {
+  padding: 0;
+}
+
+.worksheet-group-list button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.worksheet-group-list button:focus-visible {
+  outline: 2px solid var(--ui-accent);
+  outline-offset: -2px;
 }
 
 .setting-exams-groups,
@@ -1752,6 +1803,30 @@ body {
   font-weight: 700;
 }
 .setting-exams-table th:nth-child(2) { min-width: 230px; }
+.setting-exams-table.worksheet-patients-table { min-width: 620px; }
+.worksheet-patients-table th:nth-child(2) { min-width: 0; }
+.worksheet-patients-table th:last-child,
+.worksheet-patients-table td:last-child:not([colspan]) { text-align: right; }
+.btn.worksheet-exams-toggle {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  place-items: center;
+  vertical-align: middle;
+  background: var(--ui-tint);
+  color: var(--ui-accent);
+}
+.worksheet-exams-toggle > .ico {
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+.setting-exams-pagination.worksheet-pagination {
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+}
 .setting-exams-table tbody tr { transition: background-color 0.2s ease; }
 .setting-exams-table tbody tr:hover {
   background: var(--ui-tint);
@@ -1855,7 +1930,8 @@ body {
     height: calc(100vh - 7rem);
   }
 
-  .setting-exams-columns {
+  .setting-exams-columns,
+  .worksheet-columns {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -2119,10 +2195,9 @@ body {
   background: #4935ba;
   outline: none;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.78),
-    0 0 8px rgba(255, 226, 156, 0.98),
-    0 0 18px rgba(255, 208, 93, 0.62),
-    0 5px 10px rgba(5, 12, 22, 0.55);
+    0 0 0 2px rgba(128, 128, 128, 0.35),
+    0 0 8px rgba(128, 128, 128, 0.18),
+    0 5px 10px rgba(96, 96, 96, 0.12);
 }
 
 .btn-primary:active,

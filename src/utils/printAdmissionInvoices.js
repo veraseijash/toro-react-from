@@ -1,15 +1,113 @@
 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 }[char]));
-const amount = (value) => Number(value).toFixed(2);
+const amount = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format;
+
+export function buildInvoiceDocument(progress) {
+  return buildAdmissionPrintDocument(progress, {
+    template: progress.laboratory?.voucher_format,
+    rowCount: Number(progress.laboratory?.rows_description_invoices),
+    pages: progress.invoices,
+    type: 'factura',
+  });
+}
+
+export function buildAdmissionPrintDocument(progress, { template, rowCount, pages, type, logoUrl = '' }) {
+  if (typeof template !== 'string' || !template.trim()) {
+    throw new Error(`El laboratorio no tiene un formato de ${type} configurado.`);
+  }
+
+  const format = template.replace(/&#x(?:A|9|20);/gi, (entity) => ({
+    '&#xa;': '\n', '&#x9;': '\t', '&#x20;': ' ',
+  }[entity.toLowerCase()]));
+  const rowPattern = /\[list_description\]\s*(<tr\b[^>]*>[\s\S]*?<\/tr>)\s*\[totales\]/i;
+  const rowTemplate = format.match(rowPattern)?.[1];
+  const cellPattern = /(<td\b[^>]*>)\s*(<\/td>)/gi;
+  if (!rowTemplate || [...rowTemplate.matchAll(cellPattern)].length !== 4) {
+    throw new Error(`El formato de ${type} debe incluir una fila de cuatro celdas entre [list_description] y [totales].`);
+  }
+
+  const parser = new DOMParser();
+  const documents = pages.map(({ data, items, taxBreakdown }) => {
+    const rows = Array.from({ length: Math.max(rowCount || 0, items.length) }, (_, index) => {
+      const item = items[index];
+      const cells = item ? [item.quantity, item.description, amount(item.amount), amount(item.total)] : [];
+      let column = 0;
+      return rowTemplate.replace(/^<tr\b/i, '<tr data-invoice-description')
+        .replace(cellPattern, (_, open, close) =>
+          `${open}${escapeHtml(cells[column++]) || '&nbsp;'}${close}`);
+    }).join('');
+    const taxes = taxBreakdown?.length ? taxBreakdown : [
+      { rate: data.iva, base: data.tax_base, amount: data.iva_total },
+    ];
+    const totals = [
+      ['SUB-TOTAL', data.subtotal],
+      [`DESCUENTO (%) ${Number(data.discount)}`, data.discount_total],
+      ...taxes.map((tax) => [`IVA: ${Number(tax.rate).toFixed(2)} % SOBRE ${amount(tax.base)}`, tax.amount]),
+      ['TOTAL A PAGAR', data.total],
+    ].map(([label, value]) => `<tr class="invoice-total">
+      <td colspan="3">${label}</td><td>${amount(value)}</td>
+    </tr>`).join('');
+    const values = {
+      noInvoice: escapeHtml(data.no_invoice),
+      noReceipt: escapeHtml(data.no_invoice),
+      src_image: escapeHtml(logoUrl),
+      business_name: escapeHtml(progress.laboratory?.business_name),
+      rif_lab: escapeHtml(progress.laboratory?.rif),
+      address_lab: escapeHtml(progress.laboratory?.address),
+      phone_1: escapeHtml(progress.laboratory?.phone_1),
+      phone_2: escapeHtml(progress.laboratory?.phone_2),
+      email: escapeHtml(progress.laboratory?.email),
+      fecha: escapeHtml(progress.date),
+      'razon-social': escapeHtml(data.business_name),
+      rif: escapeHtml(data.rif),
+      domicilio: escapeHtml(data.address),
+      name: escapeHtml(progress.patient.name),
+      phone: escapeHtml(progress.patient.phone),
+      list_description: rows,
+      totales: totals,
+    };
+    const html = format.replace(rowPattern, '[list_description][totales]')
+      .replace(/\[\[?(rif_lab)\]|\[([\w-]+)\]/g,
+        (placeholder, rifField, field) => {
+          const key = rifField ?? field;
+          return Object.hasOwn(values, key) ? values[key] : placeholder;
+        });
+    return parser.parseFromString(html, 'text/html');
+  });
+
+  const [document, ...remaining] = documents;
+  const style = document.createElement('style');
+  style.textContent = `
+    table:has([data-invoice-description]) { border-collapse: collapse; }
+    [data-invoice-description] > td {
+      border-width: 0 0 0 1px !important;
+      border-style: solid !important;
+      border-color: black !important;
+    }
+    [data-invoice-description] > td:last-child { border-right-width: 1px !important; }
+    [data-invoice-description]:has(+ .invoice-total) > td { border-bottom-width: 1px !important; }
+    .invoice-total > td { padding: 3px 10px; text-align: right; }
+    .invoice-total > td:last-child { border: 1px solid black; }
+  `;
+  document.head.appendChild(style);
+  remaining.forEach((invoice) => {
+    const page = document.createElement('section');
+    page.style.breakBefore = 'page';
+    page.append(...invoice.body.childNodes);
+    document.body.appendChild(page);
+  });
+  return `<!doctype html>${document.documentElement.outerHTML}`;
+}
 
 // A separate document keeps admission controls and the success dialog out of print.
-export default function printAdmissionInvoices(progress) {
+export default function printAdmissionInvoices(html, title = 'Facturas del paciente') {
   return new Promise((resolve, reject) => {
     const frame = document.createElement('iframe');
-    frame.title = 'Facturas del paciente';
+    frame.title = title;
     frame.style.cssText = 'position:fixed;left:-10000px;top:0;width:800px;height:1000px;border:0';
     frame.setAttribute('aria-hidden', 'true');
+    frame.setAttribute('sandbox', 'allow-same-origin allow-modals');
     frame.onload = async () => {
       try {
         await frame.contentDocument.fonts?.ready;
@@ -22,24 +120,7 @@ export default function printAdmissionInvoices(progress) {
         reject(error);
       }
     };
-    frame.srcdoc = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Facturas</title>
-      <style>@page{margin:15mm}body{font:12px Arial,sans-serif;color:#000;background:#fff}
-      section{break-after:page}section:last-child{break-after:auto}h1{font-size:20px}
-      table{width:100%;border-collapse:collapse;margin:20px 0}th,td{padding:7px;border-bottom:1px solid #ccc;text-align:left}
-      .number{text-align:right}.totals{margin-left:auto;width:50%}.totals p{display:flex;justify-content:space-between}</style></head><body>
-      ${progress.invoices.map(({ data, items }) => `<section>
-        <h1>${escapeHtml(progress.laboratory?.business_name ?? progress.laboratory?.name ?? 'Laboratorio')}</h1>
-        <h2>Factura ${escapeHtml(data.no_invoice)}</h2><p>Fecha: ${escapeHtml(progress.date)}</p>
-        <p>Paciente: ${escapeHtml(progress.patient.name)}</p>
-        <p>Razón social: ${escapeHtml(data.business_name)}<br>RIF: ${escapeHtml(data.rif)}<br>Domicilio: ${escapeHtml(data.address)}</p>
-        <table><thead><tr><th>Cantidad</th><th>Descripción</th><th class="number">Precio unitario</th><th class="number">Total</th></tr></thead>
-        <tbody>${items.map((item) => `<tr><td>${escapeHtml(item.quantity)}</td><td>${escapeHtml(item.description)}</td><td class="number">${amount(item.amount)}</td><td class="number">${amount(item.total)}</td></tr>`).join('')}</tbody></table>
-        <div class="totals"><p><span>Subtotal</span><span>${amount(data.subtotal)}</span></p>
-        <p><span>Descuento (${amount(data.discount)} %)</span><span>${amount(data.discount_total)}</span></p>
-        <p><span>Base imponible</span><span>${amount(data.tax_base)}</span></p>
-        <p><span>IVA</span><span>${amount(data.iva_total)}</span></p>
-        <p><strong>Total</strong><strong>${amount(data.total)}</strong></p></div></section>`).join('')}
-      </body></html>`;
+    frame.srcdoc = html;
     document.body.appendChild(frame);
   });
 }
